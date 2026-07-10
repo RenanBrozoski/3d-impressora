@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/empty-state";
 import { NovoClienteButton } from "./novo-cliente-button";
 
 export default async function ClientesPage({
@@ -77,8 +78,8 @@ export default async function ClientesPage({
             })}
             {customers.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum cliente encontrado.
+                <td colSpan={6}>
+                  <EmptyState title="Nenhum cliente encontrado." />
                 </td>
               </tr>
             )}

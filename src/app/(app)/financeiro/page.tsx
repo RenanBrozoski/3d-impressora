@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/dal";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { NovaDespesaButton } from "./nova-despesa-button";
 
 const CATEGORIA_LABEL: Record<string, string> = {
@@ -83,8 +84,8 @@ export default async function FinanceiroPage() {
                 ))}
                 {expenses.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Nenhuma despesa registrada.
+                    <td colSpan={3}>
+                      <EmptyState title="Nenhuma despesa registrada." />
                     </td>
                   </tr>
                 )}
@@ -117,8 +118,8 @@ export default async function FinanceiroPage() {
                 ))}
                 {payments.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Nenhum pagamento recebido neste mês.
+                    <td colSpan={3}>
+                      <EmptyState title="Nenhum pagamento recebido neste mês." />
                     </td>
                   </tr>
                 )}

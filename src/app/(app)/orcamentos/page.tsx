@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { QUOTE_STATUS_COLOR, QUOTE_STATUS_LABEL } from "@/lib/status";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function OrcamentosPage({
   searchParams,
@@ -74,8 +75,8 @@ export default async function OrcamentosPage({
             ))}
             {quotes.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum orçamento encontrado.
+                <td colSpan={6}>
+                  <EmptyState title="Nenhum orçamento encontrado." />
                 </td>
               </tr>
             )}

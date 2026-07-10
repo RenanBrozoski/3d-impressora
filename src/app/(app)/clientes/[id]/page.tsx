@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, PAYMENT_STATUS_COLOR, PAYMENT_STATUS_LABEL } from "@/lib/status";
 import { setCustomerActive } from "@/app/actions/customers";
+import { EmptyState } from "@/components/empty-state";
 import { EditarClienteButton } from "./editar-cliente-button";
 
 export default async function ClienteDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -114,8 +115,8 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
             ))}
             {customer.orders.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum pedido ainda.
+                <td colSpan={5}>
+                  <EmptyState title="Nenhum pedido ainda." />
                 </td>
               </tr>
             )}

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, PAYMENT_STATUS_COLOR, PAYMENT_STATUS_LABEL } from "@/lib/status";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function PedidosPage({
   searchParams,
@@ -104,8 +105,8 @@ export default async function PedidosPage({
             })}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum pedido encontrado.
+                <td colSpan={7}>
+                  <EmptyState title="Nenhum pedido encontrado." />
                 </td>
               </tr>
             )}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { PRINTER_STATUS_COLOR, PRINTER_STATUS_LABEL } from "@/lib/status";
 import { NovoPrinterButton } from "./novo-printer-button";
 import { PrinterActions } from "./printer-actions";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function ImpressorasPage() {
   const printers = await db.printer.findMany({
@@ -62,7 +63,9 @@ export default async function ImpressorasPage() {
         })}
 
         {printers.length === 0 && (
-          <p className="col-span-full py-8 text-center text-neutral-500 dark:text-neutral-400">Nenhuma impressora cadastrada.</p>
+          <div className="col-span-full">
+            <EmptyState title="Nenhuma impressora cadastrada." />
+          </div>
         )}
       </div>
     </div>

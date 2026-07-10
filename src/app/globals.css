@@ -178,3 +178,72 @@ select option {
     animation: none !important;
   }
 }
+
+/* ---------- estado vazio: impressora "imprimindo" em CSS puro ---------- */
+
+.printer-anim {
+  position: relative;
+  width: 110px;
+  height: 64px;
+}
+
+.printer-nozzle {
+  position: absolute;
+  top: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 10px var(--ring);
+  animation: nozzle-move 2.2s ease-in-out infinite;
+}
+
+.printer-layers {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 3px;
+}
+
+.printer-layers span {
+  width: 44px;
+  height: 6px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  opacity: 0.3;
+  animation: layer-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes nozzle-move {
+  0%,
+  100% {
+    left: 8px;
+  }
+  50% {
+    left: 58px;
+  }
+}
+
+@keyframes layer-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleX(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .printer-nozzle,
+  .printer-layers span {
+    animation: none !important;
+    opacity: 0.8;
+  }
+}

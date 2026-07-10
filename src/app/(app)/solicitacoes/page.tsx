@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { CLIENT_REQUEST_STATUS_COLOR, CLIENT_REQUEST_STATUS_LABEL } from "@/lib/status";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function SolicitacoesPage() {
   const requests = await db.clientRequest.findMany({
@@ -43,8 +44,8 @@ export default async function SolicitacoesPage() {
             ))}
             {requests.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhuma solicitação recebida ainda.
+                <td colSpan={5}>
+                  <EmptyState title="Nenhuma solicitação recebida ainda." />
                 </td>
               </tr>
             )}

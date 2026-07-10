@@ -5,6 +5,7 @@ import { Input, Select } from "@/components/ui/input";
 import { PRODUCT_STATUS_COLOR, PRODUCT_STATUS_LABEL } from "@/lib/status";
 import { NovoProdutoButton } from "./novo-produto-button";
 import { ProductRowActions } from "./product-row-actions";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function ProdutosPage({
   searchParams,
@@ -94,9 +95,9 @@ export default async function ProdutosPage({
         ))}
 
         {products.length === 0 && (
-          <p className="col-span-full py-8 text-center text-neutral-500 dark:text-neutral-400">
-            Nenhum produto encontrado.
-          </p>
+          <div className="col-span-full">
+            <EmptyState title="Nenhum produto encontrado." />
+          </div>
         )}
       </div>
     </div>

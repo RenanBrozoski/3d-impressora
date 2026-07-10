@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { PRINTER_STATUS_COLOR, PRINTER_STATUS_LABEL, PRODUCTION_STATUS_COLOR, PRODUCTION_STATUS_LABEL } from "@/lib/status";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function ImpressoraDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -74,8 +75,8 @@ export default async function ImpressoraDetailPage({ params }: { params: Promise
             ))}
             {printer.filaProducao.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum uso registrado ainda.
+                <td colSpan={4}>
+                  <EmptyState title="Nenhum uso registrado ainda." />
                 </td>
               </tr>
             )}

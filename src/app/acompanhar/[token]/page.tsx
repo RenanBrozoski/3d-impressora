@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedBackground } from "@/components/animated-background";
+import { PrintCube } from "@/components/print-cube";
 import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, PAYMENT_STATUS_COLOR, PAYMENT_STATUS_LABEL } from "@/lib/status";
 
 export default async function AcompanharPedidoPage({ params }: { params: Promise<{ token: string }> }) {
@@ -18,6 +19,9 @@ export default async function AcompanharPedidoPage({ params }: { params: Promise
   return (
     <div className="relative mx-auto min-h-screen max-w-lg overflow-hidden px-4 py-10">
       <AnimatedBackground intensity="subtle" />
+      <div className="mb-2 flex justify-center">
+        <PrintCube size={140} />
+      </div>
       <h1 className="mb-1 text-xl font-semibold text-neutral-900 dark:text-white">Acompanhamento do pedido {order.numero}</h1>
       <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">Olá, {order.customer.nome}</p>
 

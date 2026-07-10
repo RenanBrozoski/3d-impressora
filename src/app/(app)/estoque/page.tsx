@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input, Select } from "@/components/ui/input";
+import { EmptyState } from "@/components/empty-state";
 import { NovoItemButton } from "./novo-item-button";
 import { ItemRowActions } from "./item-row-actions";
 
@@ -102,8 +103,8 @@ export default async function EstoquePage({
             })}
             {items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum item de estoque encontrado.
+                <td colSpan={6}>
+                  <EmptyState title="Nenhum item de estoque encontrado." />
                 </td>
               </tr>
             )}

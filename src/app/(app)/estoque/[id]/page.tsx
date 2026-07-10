@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/empty-state";
 import { MovementModal } from "../movement-modal";
 
 const TIPO_MOVIMENTO_LABEL: Record<string, string> = { ENTRADA: "Entrada", SAIDA: "Saída", AJUSTE: "Ajuste" };
@@ -80,8 +81,8 @@ export default async function ItemEstoqueDetailPage({ params }: { params: Promis
             ))}
             {item.movements.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhuma movimentação registrada.
+                <td colSpan={5}>
+                  <EmptyState title="Nenhuma movimentação registrada." />
                 </td>
               </tr>
             )}

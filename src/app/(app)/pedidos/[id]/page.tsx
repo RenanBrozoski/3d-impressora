@@ -8,6 +8,7 @@ import { OrderStatusSelect } from "./order-status-select";
 import { PaymentModal } from "./payment-modal";
 import { DeliveryButton } from "./delivery-button";
 import { TrackingLink } from "./tracking-link";
+import { EmptyState } from "@/components/empty-state";
 import { PrintButton } from "@/components/print-button";
 
 export default async function PedidoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -151,8 +152,8 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
             ))}
             {order.payments.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum pagamento registrado.
+                <td colSpan={4}>
+                  <EmptyState title="Nenhum pagamento registrado." />
                 </td>
               </tr>
             )}

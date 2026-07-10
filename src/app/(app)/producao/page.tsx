@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { Select } from "@/components/ui/input";
 import { PRODUCTION_STATUS_LABEL } from "@/lib/status";
 import { QueueRow } from "./queue-row";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function ProducaoPage({
   searchParams,
@@ -53,8 +54,8 @@ export default async function ProducaoPage({
             ))}
             {queue.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                  Nenhum item na fila de produção.
+                <td colSpan={6}>
+                  <EmptyState title="Nenhum item na fila de produção." />
                 </td>
               </tr>
             )}

@@ -11,6 +11,7 @@ import {
   getTempoMedioProducao,
 } from "@/lib/reports";
 import { ExportCsvButton } from "@/components/export-csv-button";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function RelatoriosPage() {
   const now = new Date();
@@ -85,8 +86,8 @@ export default async function RelatoriosPage() {
               ))}
               {produtos.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                    Sem dados ainda.
+                  <td colSpan={4}>
+                    <EmptyState title="Sem dados ainda." />
                   </td>
                 </tr>
               )}
@@ -116,8 +117,8 @@ export default async function RelatoriosPage() {
               ))}
               {clientes.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                    Sem dados ainda.
+                  <td colSpan={3}>
+                    <EmptyState title="Sem dados ainda." />
                   </td>
                 </tr>
               )}
@@ -148,8 +149,8 @@ export default async function RelatoriosPage() {
                 ))}
                 {materiais.length === 0 && (
                   <tr>
-                    <td colSpan={2} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Sem dados ainda.
+                    <td colSpan={2}>
+                      <EmptyState title="Sem dados ainda." />
                     </td>
                   </tr>
                 )}
@@ -179,8 +180,8 @@ export default async function RelatoriosPage() {
                 ))}
                 {impressoras.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      Nenhuma impressora cadastrada.
+                    <td colSpan={3}>
+                      <EmptyState title="Nenhuma impressora cadastrada." />
                     </td>
                   </tr>
                 )}
