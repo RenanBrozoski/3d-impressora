@@ -36,24 +36,24 @@ export default async function ImpressoraDetailPage({ params }: { params: Promise
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Horas totais de impressão</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{horasTotais.toFixed(1)}h</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Itens processados</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{total}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Taxa de falha</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{taxaFalha.toFixed(0)}%</p>
         </div>
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Histórico de uso</h2>
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Data</th>
               <th className="px-4 py-3 font-medium">Peça</th>
@@ -61,7 +61,7 @@ export default async function ImpressoraDetailPage({ params }: { params: Promise
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {printer.filaProducao.map((f) => (
               <tr key={f.id}>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{formatDateTime(f.createdAt)}</td>

@@ -26,7 +26,7 @@ export default async function ImpressorasPage() {
           const taxaFalha = total > 0 ? (falhas / total) * 100 : 0;
 
           return (
-            <div key={printer.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <div key={printer.id} className="card p-4">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div>
                   <Link href={`/impressoras/${printer.id}`} className="font-medium text-neutral-900 hover:underline dark:text-white">

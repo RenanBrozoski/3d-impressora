@@ -21,7 +21,7 @@ export function UsersSection({ users }: { users: UserData[] }) {
   const [editUser, setEditUser] = useState<UserData | null>(null);
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="card p-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Usuários</h2>
         <Button size="sm" onClick={() => setNovoOpen(true)}>

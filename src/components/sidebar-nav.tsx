@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 import { NAV_ITEMS } from "./nav-items";
 
 export function SidebarNav({
@@ -19,18 +20,24 @@ export function SidebarNav({
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition ${
-              isActive
-                ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-                : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            }`}
-          >
-            <Icon size={18} />
-            {item.label}
+          <Link key={item.href} href={item.href} onClick={onNavigate} className="relative">
+            {isActive && (
+              <motion.div
+                layoutId="nav-active-pill"
+                className="absolute inset-0 rounded-lg bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] shadow-[0_4px_16px_-4px_var(--ring)]"
+                transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              />
+            )}
+            <span
+              className={`relative z-10 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? "text-white"
+                  : "text-neutral-600 hover:bg-neutral-900/5 dark:text-neutral-300 dark:hover:bg-white/8"
+              }`}
+            >
+              <Icon size={18} />
+              {item.label}
+            </span>
           </Link>
         );
       })}

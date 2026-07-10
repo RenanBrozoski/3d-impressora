@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedBackground } from "@/components/animated-background";
 import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, PAYMENT_STATUS_COLOR, PAYMENT_STATUS_LABEL } from "@/lib/status";
 
 export default async function AcompanharPedidoPage({ params }: { params: Promise<{ token: string }> }) {
@@ -15,7 +16,8 @@ export default async function AcompanharPedidoPage({ params }: { params: Promise
   if (!order) notFound();
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-10">
+    <div className="relative mx-auto min-h-screen max-w-lg overflow-hidden px-4 py-10">
+      <AnimatedBackground intensity="subtle" />
       <h1 className="mb-1 text-xl font-semibold text-neutral-900 dark:text-white">Acompanhamento do pedido {order.numero}</h1>
       <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">Olá, {order.customer.nome}</p>
 
@@ -24,7 +26,7 @@ export default async function AcompanharPedidoPage({ params }: { params: Promise
         <Badge color={PAYMENT_STATUS_COLOR[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
       </div>
 
-      <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="card mb-6 p-4">
         <div className="mb-3 grid grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">Prazo de entrega</p>

@@ -51,21 +51,21 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Total gasto</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{formatCurrency(totalGasto)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Pedidos feitos</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{customer.orders.length}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Status</p>
           <Badge color={customer.ativo ? "green" : "neutral"}>{customer.ativo ? "Ativo" : "Inativo"}</Badge>
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900 sm:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-4 card p-4 sm:grid-cols-2">
         <div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">CPF/CNPJ</p>
           <p className="text-neutral-900 dark:text-white">{customer.cpfCnpj || "-"}</p>
@@ -85,9 +85,9 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Histórico de pedidos</h2>
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Pedido</th>
               <th className="px-4 py-3 font-medium">Data</th>
@@ -96,7 +96,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
               <th className="px-4 py-3 font-medium">Valor</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {customer.orders.map((order) => (
               <tr key={order.id}>
                 <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{order.numero}</td>

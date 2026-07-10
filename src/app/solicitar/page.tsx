@@ -1,12 +1,14 @@
 import { db } from "@/lib/db";
+import { AnimatedBackground } from "@/components/animated-background";
 import { SolicitarForm } from "./solicitar-form";
 
 export default async function SolicitarPage() {
   const settings = await db.settings.findUnique({ where: { id: 1 } });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-10 dark:bg-neutral-950">
-      <div className="w-full max-w-lg rounded-xl border border-neutral-200 bg-white p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+      <AnimatedBackground intensity="hero" />
+      <div className="card relative w-full max-w-lg !bg-[var(--surface-solid)]/90 p-8">
         <h1 className="mb-1 text-xl font-semibold text-neutral-900 dark:text-white">
           {settings?.nomeLoja ?? "Impressão 3D"}
         </h1>

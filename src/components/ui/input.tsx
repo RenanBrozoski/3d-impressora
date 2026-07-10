@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const fieldClasses =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-neutral-400";
+  "glow-ring w-full rounded-lg border border-neutral-300 bg-white/80 px-3 py-2 text-sm text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-[var(--accent)] dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-[var(--accent)]";
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(fieldClasses, className)} {...props} />;
@@ -27,5 +27,5 @@ export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLab
 
 export function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="mt-1 text-xs text-red-600 dark:text-red-400">{message}</p>;
+  return <p className="mt-1 text-xs text-red-500 dark:text-red-400">{message}</p>;
 }

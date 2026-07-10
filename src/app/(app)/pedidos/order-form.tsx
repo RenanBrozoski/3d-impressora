@@ -84,7 +84,7 @@ export function OrderForm({ refs, customers }: { refs: ItemEditorRefs; customers
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 rounded-xl border border-neutral-200 bg-white p-4 sm:grid-cols-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="grid grid-cols-1 gap-4 card p-4 sm:grid-cols-4">
         <div>
           <Label>Cliente *</Label>
           <Select value={customerId} onChange={(e) => setCustomerId(e.target.value ? Number(e.target.value) : "")} required>

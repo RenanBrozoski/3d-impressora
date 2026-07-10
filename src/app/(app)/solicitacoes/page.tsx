@@ -14,9 +14,9 @@ export default async function SolicitacoesPage() {
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-neutral-900 dark:text-white">Solicitações de clientes</h1>
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
               <th className="px-4 py-3 font-medium">Contato</th>
@@ -25,9 +25,9 @@ export default async function SolicitacoesPage() {
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {requests.map((r) => (
-              <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+              <tr key={r.id} className="hover:bg-[var(--accent)]/5">
                 <td className="px-4 py-3">
                   <Link href={`/solicitacoes/${r.id}`} className="font-medium text-neutral-900 hover:underline dark:text-white">
                     {r.nome}

@@ -58,9 +58,9 @@ export default async function PedidosPage({
         </Select>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Número</th>
               <th className="px-4 py-3 font-medium">Cliente</th>
@@ -71,14 +71,14 @@ export default async function PedidosPage({
               <th className="px-4 py-3 font-medium">Pagamento</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {orders.map((order) => {
               const atrasado =
                 order.prazoEntrega &&
                 order.prazoEntrega < new Date() &&
                 !["ENTREGUE", "CANCELADO"].includes(order.status);
               return (
-                <tr key={order.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                <tr key={order.id} className="hover:bg-[var(--accent)]/5">
                   <td className="px-4 py-3">
                     <Link href={`/pedidos/${order.id}`} className="font-medium text-neutral-900 hover:underline dark:text-white">
                       {order.numero}

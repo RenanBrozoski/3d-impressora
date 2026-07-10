@@ -42,15 +42,15 @@ export default async function FinanceiroPage() {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Recebido no mês</p>
           <p className="text-xl font-semibold text-green-600 dark:text-green-400">{formatCurrency(receitaMes)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Despesas no mês</p>
           <p className="text-xl font-semibold text-red-600 dark:text-red-400">{formatCurrency(despesaMes)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Saldo do mês</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{formatCurrency(receitaMes - despesaMes)}</p>
         </div>
@@ -59,16 +59,16 @@ export default async function FinanceiroPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>
           <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Despesas recentes</h2>
-          <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="overflow-x-auto card">
             <table className="w-full text-sm">
-              <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+              <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Descrição</th>
                   <th className="px-4 py-3 font-medium">Categoria</th>
                   <th className="px-4 py-3 font-medium">Valor</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tbody className="divide-y divide-[var(--surface-border)]">
                 {expenses.map((e) => (
                   <tr key={e.id}>
                     <td className="px-4 py-3">
@@ -95,16 +95,16 @@ export default async function FinanceiroPage() {
 
         <div>
           <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Pagamentos recebidos no mês</h2>
-          <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="overflow-x-auto card">
             <table className="w-full text-sm">
-              <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+              <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Pedido</th>
                   <th className="px-4 py-3 font-medium">Data</th>
                   <th className="px-4 py-3 font-medium">Valor</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tbody className="divide-y divide-[var(--surface-border)]">
                 {payments.map((p) => (
                   <tr key={p.id}>
                     <td className="px-4 py-3">

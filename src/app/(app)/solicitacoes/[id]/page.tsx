@@ -39,7 +39,7 @@ export default async function SolicitacaoDetailPage({ params }: { params: Promis
         </p>
       )}
 
-      <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 card p-4">
         <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Descrição do pedido</p>
         <p className="whitespace-pre-wrap text-neutral-900 dark:text-white">{request.descricao}</p>
       </div>
@@ -52,7 +52,7 @@ export default async function SolicitacaoDetailPage({ params }: { params: Promis
             href={`/api/uploads/${a.caminho}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg border border-neutral-200 bg-white p-3 text-center text-sm text-neutral-700 hover:border-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+            className="card p-3 text-center text-sm text-neutral-700 dark:text-neutral-300"
           >
             {a.nomeArquivo}
           </a>

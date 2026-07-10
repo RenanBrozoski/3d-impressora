@@ -70,7 +70,7 @@ export function ItemCard({
   }
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="card p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
@@ -224,7 +224,7 @@ export function ItemCard({
         <Textarea rows={2} value={item.observacoes} onChange={(e) => set({ observacoes: e.target.value })} />
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg bg-neutral-50 p-3 text-sm sm:grid-cols-5 dark:bg-neutral-800/60">
+      <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-[var(--surface-border)] bg-gradient-to-br from-[var(--accent)]/8 to-[var(--accent-2)]/8 p-3 text-sm sm:grid-cols-5">
         <Result label="Custo unitário" value={resultado.custoTotalUnitario} />
         <Result label="Valor unitário" value={resultado.valorUnitario} highlight />
         <Result label="Valor total" value={resultado.valorTotal} highlight />

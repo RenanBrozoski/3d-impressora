@@ -31,33 +31,33 @@ export default async function ItemEstoqueDetailPage({ params }: { params: Promis
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Quantidade atual</p>
           <p className={`text-xl font-semibold ${baixo ? "text-red-600 dark:text-red-400" : "text-neutral-900 dark:text-white"}`}>
             {formatNumber(item.quantidadeAtual)} {item.unidade.toLowerCase()}
           </p>
           {baixo && <Badge color="red">Estoque baixo</Badge>}
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Quantidade mínima</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">
             {formatNumber(item.quantidadeMinima)} {item.unidade.toLowerCase()}
           </p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Preço/unidade</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{formatCurrency(item.precoPorUnidade)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Fornecedor</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{item.fornecedor || "-"}</p>
         </div>
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Histórico de movimentações</h2>
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Data</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
@@ -66,7 +66,7 @@ export default async function ItemEstoqueDetailPage({ params }: { params: Promis
               <th className="px-4 py-3 font-medium">Motivo</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {item.movements.map((m) => (
               <tr key={m.id}>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{formatDateTime(m.createdAt)}</td>

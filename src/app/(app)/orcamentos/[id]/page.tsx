@@ -39,7 +39,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
         </p>
       )}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-neutral-200 bg-white p-4 sm:grid-cols-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 grid grid-cols-1 gap-4 card p-4 sm:grid-cols-3">
         <div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Data</p>
           <p className="text-neutral-900 dark:text-white">{formatDate(quote.createdAt)}</p>
@@ -61,7 +61,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
       </div>
 
       {quote.clientRequest && quote.clientRequest.attachments.length > 0 && (
-        <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 print:hidden dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mb-6 card p-4 print:hidden">
           <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
             Anexos da solicitação original do cliente
           </p>
@@ -72,7 +72,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
                 href={`/api/uploads/${a.caminho}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md border border-neutral-200 px-3 py-1.5 text-sm text-neutral-700 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300"
+                className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm text-neutral-700 transition hover:border-[var(--surface-border-hover)] dark:text-neutral-300"
               >
                 {a.nomeArquivo}
               </a>
@@ -81,9 +81,9 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Peça</th>
               <th className="px-4 py-3 font-medium">Material/Cor</th>
@@ -93,7 +93,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
               <th className="px-4 py-3 font-medium print:hidden">Lucro</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {quote.items.map((item) => (
               <tr key={item.id}>
                 <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{item.nomePeca}</td>

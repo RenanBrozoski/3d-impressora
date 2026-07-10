@@ -23,7 +23,7 @@ export function SettingsForm({ settings }: { settings: SettingsData }) {
 
   return (
     <form action={formAction} className="space-y-6">
-      <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="card p-4">
         <h2 className="mb-4 text-sm font-medium text-neutral-700 dark:text-neutral-300">Dados do negócio</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -45,7 +45,7 @@ export function SettingsForm({ settings }: { settings: SettingsData }) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="card p-4">
         <h2 className="mb-4 text-sm font-medium text-neutral-700 dark:text-neutral-300">
           Padrões da calculadora de custo/preço
         </h2>

@@ -35,9 +35,9 @@ export default async function ProducaoPage({
         </Select>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Peça / Pedido</th>
               <th className="px-4 py-3 font-medium">Impressora</th>
@@ -47,7 +47,7 @@ export default async function ProducaoPage({
               <th className="px-4 py-3 font-medium">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {queue.map((q) => (
               <QueueRow key={q.id} queue={q} printers={printers} users={users} />
             ))}

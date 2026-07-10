@@ -56,7 +56,7 @@ export default async function ProdutosPage({
         {products.map((product) => (
           <div
             key={product.id}
-            className="flex flex-col rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+            className="flex flex-col card p-4"
           >
             <div className="mb-2 flex items-start justify-between gap-2">
               <div>

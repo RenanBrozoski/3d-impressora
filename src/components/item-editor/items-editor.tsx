@@ -44,7 +44,7 @@ export function ItemsEditor({
       </Button>
 
       {items.length > 0 && (
-        <div className="flex justify-end rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card flex justify-end p-4">
           <div className="text-right">
             <p className="text-xs text-neutral-500 dark:text-neutral-400">Valor total</p>
             <p className="text-xl font-semibold text-neutral-900 dark:text-white">{formatCurrency(totalGeral)}</p>

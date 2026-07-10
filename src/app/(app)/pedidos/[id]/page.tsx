@@ -51,7 +51,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white p-4 print:hidden dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 card p-4 print:hidden">
         <div className="flex items-center gap-2">
           <Badge color={ORDER_STATUS_COLOR[order.status]}>{ORDER_STATUS_LABEL[order.status]}</Badge>
           <OrderStatusSelect id={order.id} status={order.status} />
@@ -59,7 +59,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
         <TrackingLink token={order.trackingToken} />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-neutral-200 bg-white p-4 sm:grid-cols-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 grid grid-cols-1 gap-4 card p-4 sm:grid-cols-4">
         <div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Data do pedido</p>
           <p className="text-neutral-900 dark:text-white">{formatDate(order.dataPedido)}</p>
@@ -85,24 +85,24 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Valor total</p>
           <p className="text-xl font-semibold text-neutral-900 dark:text-white">{formatCurrency(order.valorTotal)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Valor pago</p>
           <p className="text-xl font-semibold text-green-600 dark:text-green-400">{formatCurrency(valorPago)}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="card p-4">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">Valor pendente</p>
           <p className="text-xl font-semibold text-red-600 dark:text-red-400">{formatCurrency(valorPendente)}</p>
         </div>
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Itens</h2>
-      <div className="mb-6 overflow-x-auto rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mb-6 overflow-x-auto card">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Peça</th>
               <th className="px-4 py-3 font-medium">Material/Cor</th>
@@ -112,7 +112,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
               <th className="px-4 py-3 font-medium print:hidden">Lucro</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {order.items.map((item) => (
               <tr key={item.id}>
                 <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{item.nomePeca}</td>
@@ -130,9 +130,9 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white print:hidden">Pagamentos</h2>
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white print:hidden dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="overflow-x-auto card print:hidden">
         <table className="w-full text-sm">
-          <thead className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+          <thead className="border-b border-[var(--surface-border)] text-left text-neutral-500 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-3 font-medium">Data</th>
               <th className="px-4 py-3 font-medium">Valor</th>
@@ -140,7 +140,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
               <th className="px-4 py-3 font-medium">Observações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <tbody className="divide-y divide-[var(--surface-border)]">
             {order.payments.map((p) => (
               <tr key={p.id}>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{formatDateTime(p.data)}</td>
