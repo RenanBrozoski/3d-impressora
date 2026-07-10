@@ -1,0 +1,35 @@
+import { z } from "zod";
+
+export const ItemPayloadSchema = z.object({
+  produtoId: z.number().nullable().optional(),
+  inventoryItemId: z.number().nullable().optional(),
+  nomePeca: z.string().trim().min(1, "Informe o nome da peça."),
+  quantidade: z.coerce.number().int().min(1, "Quantidade mínima é 1."),
+  material: z.string().trim().optional(),
+  cor: z.string().trim().optional(),
+  pesoUnidadeG: z.coerce.number().nonnegative().default(0),
+  tempoImpressaoH: z.coerce.number().nonnegative().default(0),
+  precoKgMaterial: z.coerce.number().nonnegative().default(0),
+  percentualDesperdicio: z.coerce.number().nonnegative().default(0),
+  potenciaImpressoraW: z.coerce.number().nonnegative().default(0),
+  valorKwh: z.coerce.number().nonnegative().default(0),
+  custoHoraMaquina: z.coerce.number().nonnegative().default(0),
+  tempoMaoObraH: z.coerce.number().nonnegative().default(0),
+  valorHoraMaoObra: z.coerce.number().nonnegative().default(0),
+  taxaMinima: z.coerce.number().nonnegative().default(0),
+  margemLucroPercent: z.coerce.number().nonnegative().default(0),
+  desconto: z.coerce.number().nonnegative().default(0),
+  custoMaterial: z.coerce.number().nonnegative().default(0),
+  custoEnergia: z.coerce.number().nonnegative().default(0),
+  custoMaquina: z.coerce.number().nonnegative().default(0),
+  custoMaoObra: z.coerce.number().nonnegative().default(0),
+  custoAcabamento: z.coerce.number().nonnegative().default(0),
+  custoEmbalagem: z.coerce.number().nonnegative().default(0),
+  outrosCustos: z.coerce.number().nonnegative().default(0),
+  valorUnitario: z.coerce.number().nonnegative().default(0),
+  valorTotal: z.coerce.number().nonnegative().default(0),
+  lucroEstimado: z.coerce.number().default(0),
+  observacoes: z.string().trim().optional(),
+});
+
+export type ItemPayload = z.infer<typeof ItemPayloadSchema>;

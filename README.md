@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Gestão — Impressão 3D
 
-## Getting Started
+Mini ERP/CRM para uma operação de impressão 3D sob encomenda: clientes, catálogo de produtos, orçamentos, pedidos, calculadora de custo/preço, estoque de insumos, fila de produção, impressoras, financeiro, relatórios e um portal público para o cliente solicitar orçamento.
 
-First, run the development server:
+Veja o racional completo de arquitetura e regras de negócio em [docs/01-planejamento-arquitetura.md](docs/01-planejamento-arquitetura.md).
+
+## Stack
+
+- **Next.js 16** (App Router, TypeScript)
+- **SQLite** + **Prisma 7** (driver adapter `@prisma/adapter-better-sqlite3`)
+- Autenticação própria: `bcryptjs` (hash de senha) + `jose` (sessão JWT em cookie)
+- Tailwind CSS 4
+- Recharts (gráficos do dashboard/relatórios)
+
+Banco de dados é um único arquivo (`dev.db`) na raiz do projeto — sem serviço externo para instalar.
+
+## Pré-requisitos
+
+- [Node.js](https://nodejs.org/) 20 ou superior (testado com Node 22)
+
+## Instalação (primeira vez)
+
+```bash
+npm install
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+O seed cria dois usuários e as configurações padrão:
+
+| Papel | E-mail | Senha |
+|---|---|---|
+| Administrador | `admin@impressao3d.local` | `admin123` |
+| Operador | `operador@impressao3d.local` | `operador123` |
+
+**Troque essas senhas em Configurações → Usuários assim que acessar pela primeira vez.**
+
+## Rodando em desenvolvimento
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Rodando em modo "produção local"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+Ou simplesmente dê duplo clique em [`start.bat`](start.bat), que faz o build (se necessário) e sobe o servidor.
 
-To learn more about Next.js, take a look at the following resources:
+## Estrutura de pastas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+prisma/schema.prisma   modelo de dados completo (16 tabelas)
+prisma/seed.ts         usuário admin/operador + configurações padrão
+src/app/(auth)/        login
+src/app/(app)/         área logada (todos os módulos, com menu lateral)
+src/app/solicitar/     formulário público de solicitação de orçamento
+src/app/acompanhar/    página pública de acompanhamento de pedido
+src/app/actions/       Server Actions (regras de negócio de cada módulo)
+src/lib/               calculadora, sessão/auth, relatórios, validações Zod
+storage/uploads/       arquivos enviados (STL/OBJ/3MF, fotos) — criado sob demanda
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Backup do banco
 
-## Deploy on Vercel
+Configurações → **Baixar backup do banco** gera o download do arquivo `dev.db` atual com 1 clique. Para restaurar, pare o servidor e substitua o `dev.db` da raiz do projeto pelo arquivo de backup.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Migrações do banco
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Sempre que o schema (`prisma/schema.prisma`) mudar:
+
+```bash
+npx prisma migrate dev --name descricao_da_mudanca
+```
+
+Em produção (sem gerar uma nova migration, só aplicar as existentes):
+
+```bash
+npx prisma migrate deploy
+```

@@ -1,0 +1,521 @@
+// Schema completo do sistema de gestão de impressão 3D.
+// Ver docs/01-planejamento-arquitetura.md para o racional de cada tabela.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  ADMIN
+  OPERADOR
+}
+
+enum ProductStatus {
+  ATIVO
+  INATIVO
+}
+
+enum QuoteStatus {
+  RASCUNHO
+  ENVIADO
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CONVERTIDO
+}
+
+enum OrderStatus {
+  AGUARDANDO_APROVACAO
+  APROVADO
+  NA_FILA
+  EM_IMPRESSAO
+  EM_ACABAMENTO
+  PRONTO_PARA_ENTREGA
+  ENTREGUE
+  CANCELADO
+}
+
+enum PaymentStatus {
+  PENDENTE
+  PARCIAL
+  PAGO
+  CANCELADO
+}
+
+enum InventoryItemType {
+  FILAMENTO
+  RESINA
+  EMBALAGEM
+  PECA
+  FERRAMENTA
+  OUTRO
+}
+
+enum UnidadeMedida {
+  KG
+  G
+  UNIDADE
+  LITRO
+  ML
+}
+
+enum MovementType {
+  ENTRADA
+  SAIDA
+  AJUSTE
+}
+
+enum MovementOrigin {
+  COMPRA
+  PEDIDO
+  MANUAL
+  AJUSTE
+}
+
+enum PrinterType {
+  FDM
+  SLA
+  RESINA
+  OUTRO
+}
+
+enum PrinterStatus {
+  ATIVA
+  MANUTENCAO
+  PARADA
+}
+
+enum ProductionStatus {
+  NA_FILA
+  PREPARANDO_ARQUIVO
+  IMPRIMINDO
+  PAUSADO
+  FALHOU
+  REIMPRIMIR
+  EM_ACABAMENTO
+  FINALIZADO
+}
+
+enum ExpenseCategory {
+  MANUTENCAO
+  MATERIAL
+  EMBALAGEM
+  ENERGIA
+  MARKETING
+  OUTRO
+}
+
+enum ClientRequestStatus {
+  NOVO
+  EM_ANALISE
+  CONVERTIDO
+  DESCARTADO
+}
+
+// ---------- Autenticação / usuários ----------
+
+model User {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senhaHash String
+  papel     Role     @default(OPERADOR)
+  valorHora Float? // mão de obra própria deste usuário, usada pela calculadora
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auditLogs         AuditLog[]
+  producaoAtribuida ProductionQueue[]
+
+  @@map("users")
+}
+
+// ---------- Clientes ----------
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  telefone    String?
+  email       String?
+  cpfCnpj     String?
+  endereco    String?
+  cidade      String?
+  estado      String?
+  observacoes String?
+  ativo       Boolean  @default(true) // soft delete: cliente com pedidos não pode ser excluído fisicamente
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders         Order[]
+  quotes         Quote[]
+  clientRequests ClientRequest[]
+
+  @@map("customers")
+}
+
+// ---------- Produtos / catálogo ----------
+
+model Product {
+  id                    Int           @id @default(autoincrement())
+  nome                  String
+  categoria             String?
+  descricao             String?
+  fotoPath              String?
+  pesoMedioG            Float?
+  tempoMedioH           Float?
+  materialRecomendado   String?
+  custoMedio            Float?
+  precoSugerido         Float?
+  margemSugeridaPercent Float?
+  observacoesImpressao  String?
+  status                ProductStatus @default(ATIVO)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  orderItems  OrderItem[]
+  quoteItems  QuoteItem[]
+  attachments Attachment[]
+
+  @@map("products")
+}
+
+// ---------- Orçamentos ----------
+
+model Quote {
+  id              Int            @id @default(autoincrement())
+  numero          String         @unique // ex: ORC-0001
+  customerId      Int
+  customer        Customer       @relation(fields: [customerId], references: [id])
+  clientRequestId Int?           @unique // origem: solicitação pública do cliente, se houver
+  clientRequest   ClientRequest? @relation(fields: [clientRequestId], references: [id])
+  validade        DateTime?
+  status          QuoteStatus    @default(RASCUNHO)
+  valorSugerido   Float          @default(0) // soma calculada dos itens antes de ajuste manual
+  valorFinal      Float          @default(0) // valor efetivamente informado ao cliente
+  observacoes     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  items QuoteItem[]
+  order Order? // preenchido quando o orçamento é convertido em pedido
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id              Int            @id @default(autoincrement())
+  quoteId         Int
+  quote           Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId       Int?
+  product         Product?       @relation(fields: [productId], references: [id])
+  inventoryItemId Int?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  nomePeca        String
+  quantidade      Int            @default(1)
+  material        String?
+  cor             String?
+  pesoUnidadeG    Float?
+  tempoImpressaoH Float?
+
+  // parâmetros brutos da calculadora (não só os custos finais), para permitir reabrir e editar o item
+  precoKgMaterial       Float @default(0)
+  percentualDesperdicio Float @default(0)
+  potenciaImpressoraW   Float @default(0)
+  valorKwh              Float @default(0)
+  custoHoraMaquina      Float @default(0)
+  tempoMaoObraH         Float @default(0)
+  valorHoraMaoObra      Float @default(0)
+  taxaMinima            Float @default(0)
+  margemLucroPercent    Float @default(0)
+  desconto              Float @default(0)
+
+  custoMaterial   Float   @default(0)
+  custoEnergia    Float   @default(0)
+  custoMaquina    Float   @default(0)
+  custoMaoObra    Float   @default(0)
+  custoAcabamento Float   @default(0)
+  custoEmbalagem  Float   @default(0)
+  outrosCustos    Float   @default(0)
+  valorUnitario   Float   @default(0)
+  valorTotal      Float   @default(0)
+  lucroEstimado   Float   @default(0)
+  observacoes     String?
+
+  attachments Attachment[]
+
+  @@map("quote_items")
+}
+
+// ---------- Pedidos / encomendas ----------
+
+model Order {
+  id             Int           @id @default(autoincrement())
+  numero         String        @unique // ex: PED-0001
+  customerId     Int
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  quoteId        Int?          @unique // orçamento de origem, se veio de um
+  quote          Quote?        @relation(fields: [quoteId], references: [id])
+  dataPedido     DateTime      @default(now())
+  prazoEntrega   DateTime?
+  dataEntrega    DateTime?
+  status         OrderStatus   @default(APROVADO)
+  paymentStatus  PaymentStatus @default(PENDENTE)
+  formaPagamento String?
+  valorTotal     Float         @default(0) // cache da soma dos itens; recalculado a cada alteração de item
+  observacoes    String?
+  trackingToken  String        @unique @default(uuid()) // link público de acompanhamento, sem login
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  items    OrderItem[]
+  payments Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              Int            @id @default(autoincrement())
+  orderId         Int
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       Int?
+  product         Product?       @relation(fields: [productId], references: [id])
+  inventoryItemId Int?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  nomePeca        String
+  quantidade      Int            @default(1)
+  material        String?
+  cor             String?
+  pesoUnidadeG    Float?
+  tempoImpressaoH Float?
+
+  // parâmetros brutos da calculadora (não só os custos finais), para permitir reabrir e editar o item
+  precoKgMaterial       Float @default(0)
+  percentualDesperdicio Float @default(0)
+  potenciaImpressoraW   Float @default(0)
+  valorKwh              Float @default(0)
+  custoHoraMaquina      Float @default(0)
+  tempoMaoObraH         Float @default(0)
+  valorHoraMaoObra      Float @default(0)
+  taxaMinima            Float @default(0)
+  margemLucroPercent    Float @default(0)
+  desconto              Float @default(0)
+
+  custoMaterial   Float   @default(0)
+  custoEnergia    Float   @default(0)
+  custoMaquina    Float   @default(0)
+  custoMaoObra    Float   @default(0)
+  custoAcabamento Float   @default(0)
+  custoEmbalagem  Float   @default(0)
+  outrosCustos    Float   @default(0)
+  valorUnitario   Float   @default(0)
+  valorTotal      Float   @default(0)
+  lucroEstimado   Float   @default(0)
+  observacoes     String?
+
+  attachments       Attachment[]
+  filaProducao      ProductionQueue[] // mais de um registro quando há reimpressão
+  movimentosEstoque InventoryMovement[]
+
+  @@map("order_items")
+}
+
+// ---------- Estoque ----------
+
+model InventoryItem {
+  id               Int               @id @default(autoincrement())
+  nome             String
+  tipo             InventoryItemType
+  marca            String?
+  material         String?
+  cor              String?
+  unidade          UnidadeMedida
+  quantidadeAtual  Float             @default(0)
+  quantidadeMinima Float             @default(0)
+  precoCompra      Float?
+  precoPorUnidade  Float // usado pela calculadora como custo real do material
+  fornecedor       String?
+  dataCompra       DateTime?
+  observacoes      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  movements  InventoryMovement[]
+  quoteItems QuoteItem[]
+  orderItems OrderItem[]
+
+  @@map("inventory_items")
+}
+
+model InventoryMovement {
+  id              Int            @id @default(autoincrement())
+  inventoryItemId Int
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id])
+  tipo            MovementType
+  origem          MovementOrigin
+  quantidade      Float
+  motivo          String?
+  orderItemId     Int?
+  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id])
+  createdAt       DateTime       @default(now())
+
+  @@map("inventory_movements")
+}
+
+// ---------- Impressoras e produção ----------
+
+model Printer {
+  id                Int           @id @default(autoincrement())
+  nome              String
+  modelo            String?
+  tipo              PrinterType   @default(FDM)
+  potenciaW         Float
+  areaImpressao     String?
+  status            PrinterStatus @default(ATIVA)
+  custoEstimadoHora Float         @default(0) // depreciação/manutenção amortizada, entra na fórmula de custo
+  observacoes       String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  filaProducao ProductionQueue[]
+
+  @@map("printers")
+}
+
+model ProductionQueue {
+  id                 Int              @id @default(autoincrement())
+  orderItemId        Int
+  orderItem          OrderItem        @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  printerId          Int?
+  printer            Printer?         @relation(fields: [printerId], references: [id])
+  assignedUserId     Int?
+  assignedUser       User?            @relation(fields: [assignedUserId], references: [id])
+  status             ProductionStatus @default(NA_FILA)
+  prioridade         Int              @default(0)
+  dataPrevistaInicio DateTime?
+  dataPrevistaFim    DateTime?
+  dataInicioReal     DateTime?
+  dataFimReal        DateTime?
+  motivoFalha        String?
+  custoPerdido       Float? // custo do material perdido em caso de falha
+  isReimpressao      Boolean          @default(false)
+  estoqueBaixado     Boolean          @default(false) // evita baixa duplicada se o status oscilar entre Imprimindo/Pausado
+  observacoes        String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@map("production_queue")
+}
+
+// ---------- Financeiro ----------
+
+model Payment {
+  id             Int      @id @default(autoincrement())
+  orderId        Int
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  valor          Float
+  data           DateTime @default(now())
+  formaPagamento String?
+  observacoes    String?
+  createdAt      DateTime @default(now())
+
+  @@map("payments")
+}
+
+model Expense {
+  id          Int             @id @default(autoincrement())
+  categoria   ExpenseCategory
+  descricao   String
+  valor       Float
+  data        DateTime        @default(now())
+  fornecedor  String?
+  observacoes String?
+  createdAt   DateTime        @default(now())
+
+  @@map("expenses")
+}
+
+// ---------- Configurações (linha única) ----------
+
+model Settings {
+  id                          Int     @id @default(1)
+  nomeLoja                    String  @default("Minha Impressão 3D")
+  logoPath                    String?
+  contatoTelefone             String?
+  contatoEmail                String?
+  enderecoOrcamento           String?
+  valorPadraoKwh              Float   @default(0.95)
+  potenciaPadraoW             Float   @default(200)
+  valorHoraPadraoMaoDeObra    Float   @default(20)
+  margemLucroPadraoPercent    Float   @default(30)
+  taxaMinimaPedido            Float   @default(0)
+  percentualDesperdicioPadrao Float   @default(5)
+
+  @@map("settings")
+}
+
+// ---------- Anexos (STL/OBJ/3MF, fotos) ----------
+// Sem coluna polimórfica entity_type/entity_id: cada anexo usa uma FK anulável
+// específica por tipo de dono, o que preserva integridade referencial no Prisma.
+
+model Attachment {
+  id              Int            @id @default(autoincrement())
+  nomeArquivo     String
+  caminho         String
+  tipo            String
+  tamanhoBytes    Int
+  productId       Int?
+  product         Product?       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItemId     Int?
+  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  quoteItemId     Int?
+  quoteItem       QuoteItem?     @relation(fields: [quoteItemId], references: [id], onDelete: Cascade)
+  clientRequestId Int?
+  clientRequest   ClientRequest? @relation(fields: [clientRequestId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+
+  @@map("attachments")
+}
+
+// ---------- Auditoria ----------
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
+  entidade    String
+  entidadeId  Int
+  acao        String
+  dadosAntes  String?
+  dadosDepois String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+// ---------- Portal público do cliente ----------
+
+model ClientRequest {
+  id         Int                 @id @default(autoincrement())
+  nome       String
+  telefone   String?
+  email      String?
+  descricao  String
+  status     ClientRequestStatus @default(NOVO)
+  customerId Int?
+  customer   Customer?           @relation(fields: [customerId], references: [id])
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  attachments Attachment[]
+  quote       Quote?
+
+  @@map("client_requests")
+}

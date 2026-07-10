@@ -1,0 +1,37 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Package,
+  FileText,
+  ClipboardList,
+  Boxes,
+  Factory,
+  Printer,
+  Wallet,
+  BarChart3,
+  Inbox,
+  Settings,
+} from "lucide-react";
+
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  adminOnly?: boolean;
+};
+
+export const NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/produtos", label: "Produtos", icon: Package },
+  { href: "/orcamentos", label: "Orçamentos", icon: FileText },
+  { href: "/pedidos", label: "Pedidos", icon: ClipboardList },
+  { href: "/solicitacoes", label: "Solicitações", icon: Inbox },
+  { href: "/estoque", label: "Estoque", icon: Boxes },
+  { href: "/producao", label: "Produção", icon: Factory },
+  { href: "/impressoras", label: "Impressoras", icon: Printer },
+  { href: "/financeiro", label: "Financeiro", icon: Wallet, adminOnly: true },
+  { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
+  { href: "/configuracoes", label: "Configurações", icon: Settings, adminOnly: true },
+];
