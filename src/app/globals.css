@@ -115,6 +115,13 @@ body {
   }
 }
 
+/* Chromium/Windows nem sempre aplica color-scheme ao popup nativo do <select>;
+   forçar bg/cor direto na <option> é o que garante contraste nesse caso. */
+select option {
+  background-color: var(--surface-solid);
+  color: var(--foreground);
+}
+
 .text-gradient {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text;

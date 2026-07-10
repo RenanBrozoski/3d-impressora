@@ -16,8 +16,18 @@ export function StatusChart({ data }: { data: { status: string; quantidade: numb
             <Cell key={index} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip contentStyle={{ borderRadius: 8, fontSize: 13 }} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Tooltip
+          contentStyle={{
+            borderRadius: 8,
+            fontSize: 13,
+            background: "var(--surface-solid)",
+            border: "1px solid var(--surface-border)",
+            color: "var(--foreground)",
+          }}
+          labelStyle={{ color: "var(--foreground)" }}
+          itemStyle={{ color: "var(--foreground)" }}
+        />
+        <Legend wrapperStyle={{ fontSize: 12, color: "var(--foreground)" }} />
       </PieChart>
     </ResponsiveContainer>
   );
