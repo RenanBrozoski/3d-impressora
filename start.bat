@@ -4,17 +4,22 @@ cd /d "%~dp0"
 echo Sistema de Gestao - Impressao 3D
 echo.
 
+if not exist ".env" (
+    echo Arquivo .env nao encontrado.
+    echo Copie .env.example para .env e coloque sua connection string do Neon em DATABASE_URL.
+    goto erro
+)
+
 if not exist "node_modules" (
     echo Instalando dependencias, aguarde...
     call npm install
     if errorlevel 1 goto erro
 )
 
-if not exist "dev.db" (
-    echo Preparando banco de dados...
-    call npx prisma migrate deploy
-    call npx prisma db seed
-)
+echo Sincronizando banco de dados (Neon)...
+call npx prisma migrate deploy
+if errorlevel 1 goto erro
+call npx prisma db seed
 
 if not exist ".next" (
     echo Gerando build de producao, aguarde...

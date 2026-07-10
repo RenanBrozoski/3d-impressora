@@ -7,21 +7,27 @@ Veja o racional completo de arquitetura e regras de negócio em [docs/01-planeja
 ## Stack
 
 - **Next.js 16** (App Router, TypeScript)
-- **SQLite** + **Prisma 7** (driver adapter `@prisma/adapter-better-sqlite3`)
+- **Postgres (Neon)** + **Prisma 7** (driver adapter `@prisma/adapter-neon`, compatível com serverless)
 - Autenticação própria: `bcryptjs` (hash de senha) + `jose` (sessão JWT em cookie)
 - Tailwind CSS 4
 - Recharts (gráficos do dashboard/relatórios)
 
-Banco de dados é um único arquivo (`dev.db`) na raiz do projeto — sem serviço externo para instalar.
+O banco é um projeto Postgres gratuito no [Neon](https://neon.tech) — não precisa instalar nada localmente, só criar o projeto e colar a connection string no `.env`. Isso também é o que permite hospedar o sistema de graça na Vercel (plano Hobby).
 
 ## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) 20 ou superior (testado com Node 22)
+- Um projeto Postgres gratuito no [Neon](https://neon.tech) (crie e copie a connection string)
 
 ## Instalação (primeira vez)
 
 ```bash
 npm install
+```
+
+Copie `.env.example` para `.env` e cole a connection string do Neon em `DATABASE_URL`. Depois:
+
+```bash
 npx prisma migrate deploy
 npx prisma db seed
 ```
@@ -68,7 +74,14 @@ storage/uploads/       arquivos enviados (STL/OBJ/3MF, fotos) — criado sob dem
 
 ## Backup do banco
 
-Configurações → **Baixar backup do banco** gera o download do arquivo `dev.db` atual com 1 clique. Para restaurar, pare o servidor e substitua o `dev.db` da raiz do projeto pelo arquivo de backup.
+Configurações → **Baixar backup do banco** gera um arquivo `.json` com todas as tabelas do sistema, com 1 clique. Para restaurar, seria necessário reimportar esse JSON tabela por tabela (não é uma restauração automática — serve como registro/exportação de segurança).
+
+## Deploy na Vercel (gratuito)
+
+1. Suba este repositório no GitHub e importe-o em [vercel.com/new](https://vercel.com/new).
+2. Em **Environment Variables**, configure `DATABASE_URL` (a mesma connection string do Neon) e `SESSION_SECRET`.
+3. No primeiro deploy, rode `npx prisma migrate deploy` apontando para o mesmo `DATABASE_URL` (a partir da sua máquina, ou via `vercel env pull` + o comando local) para aplicar as migrations no banco de produção.
+4. **Uploads (STL/OBJ/3MF, fotos)**: hoje ficam em `storage/uploads` no disco local, o que **não funciona na Vercel** (sistema de arquivos é temporário lá). Antes de depender do envio de arquivos em produção, é preciso trocar por um storage externo (ex.: Vercel Blob).
 
 ## Migrações do banco
 
