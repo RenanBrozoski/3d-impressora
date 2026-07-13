@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { Trash2 } from "lucide-react";
 import { calcular } from "@/lib/calculadora";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea, Select, Hint } from "@/components/ui/input";
 import type { ItemDraft, ItemEditorRefs } from "./types";
@@ -21,6 +21,16 @@ export function ItemCard({
 }) {
   const resultado = calcular({ ...item.calc, quantidade: item.quantidade });
   const filamentoSelecionado = refs.insumos.find((i) => i.id === item.inventoryItemId);
+
+  const pesoTotalG = item.calc.pesoUnidadeG * item.quantidade;
+  const necessario = filamentoSelecionado
+    ? filamentoSelecionado.unidade === "KG"
+      ? pesoTotalG / 1000
+      : filamentoSelecionado.unidade === "G"
+        ? pesoTotalG
+        : item.quantidade
+    : 0;
+  const estoqueInsuficiente = !!filamentoSelecionado && necessario > filamentoSelecionado.quantidadeAtual;
 
   function set(patch: Partial<ItemDraft>) {
     onChange({ ...item, ...patch });
@@ -132,6 +142,13 @@ export function ItemCard({
               </option>
             ))}
           </Select>
+          {estoqueInsuficiente && filamentoSelecionado && (
+            <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
+              Estoque insuficiente: disponível {formatNumber(filamentoSelecionado.quantidadeAtual)}{" "}
+              {filamentoSelecionado.unidade.toLowerCase()}, precisa de {formatNumber(necessario)}{" "}
+              {filamentoSelecionado.unidade.toLowerCase()}.
+            </p>
+          )}
         </div>
         <div>
           <Label>Material</Label>

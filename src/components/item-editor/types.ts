@@ -27,6 +27,8 @@ export type InsumoRef = {
   cor: string | null;
   corHex: string | null;
   precoPorUnidade: number;
+  quantidadeAtual: number;
+  unidade: string;
 };
 
 export type PrinterRef = {
