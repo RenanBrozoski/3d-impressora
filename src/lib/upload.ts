@@ -25,7 +25,7 @@ export async function saveUploadedFile(file: File) {
   }
 
   const blob = await put(`uploads/${sanitizeFileName(file.name)}`, file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: true,
   });
 

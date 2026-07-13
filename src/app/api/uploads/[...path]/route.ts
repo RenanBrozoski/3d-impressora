@@ -14,11 +14,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
     return NextResponse.json({ erro: "Arquivo não encontrado." }, { status: 404 });
   }
 
-  if (!parsed.hostname.endsWith(".public.blob.vercel-storage.com")) {
+  if (!parsed.hostname.endsWith(".private.blob.vercel-storage.com")) {
     return NextResponse.json({ erro: "Arquivo não encontrado." }, { status: 404 });
   }
 
-  const upstream = await fetch(parsed);
+  const upstream = await fetch(parsed, {
+    headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
+  });
   if (!upstream.ok) {
     return NextResponse.json({ erro: "Arquivo não encontrado." }, { status: 404 });
   }
