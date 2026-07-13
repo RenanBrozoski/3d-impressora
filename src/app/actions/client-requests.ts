@@ -24,12 +24,16 @@ export async function createClientRequest(_state: ActionState, formData: FormDat
 
   const arquivos = formData.getAll("arquivos").filter((f): f is File => f instanceof File && f.size > 0);
 
-  let uploaded: Awaited<ReturnType<typeof saveUploadedFile>>[];
+  let uploaded: Awaited<ReturnType<typeof saveUploadedFile>>[] = [];
   try {
     uploaded = await Promise.all(arquivos.map(saveUploadedFile));
   } catch (err) {
     if (err instanceof UploadError) return { erro: err.message };
-    throw err;
+    console.error("Falha ao enviar anexo da solicitação:", err);
+    return {
+      erro:
+        "Não foi possível enviar o arquivo agora. Você pode reenviar a solicitação sem arquivo e nos mandar por WhatsApp, ou tentar novamente em alguns minutos.",
+    };
   }
 
   await db.clientRequest.create({
