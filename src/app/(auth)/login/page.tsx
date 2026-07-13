@@ -1,6 +1,6 @@
 import { Box } from "lucide-react";
 import { AnimatedBackground } from "@/components/animated-background";
-import { PrintCube } from "@/components/print-cube";
+import { PrintCubeGate } from "@/components/print-cube-gate";
 import { LoginCard } from "./login-card";
 import { LoginForm } from "./login-form";
 
@@ -10,9 +10,7 @@ export default function LoginPage() {
       <AnimatedBackground intensity="hero" />
 
       <div className="flex w-full max-w-4xl items-center justify-center gap-8">
-        <div className="hidden shrink-0 lg:block">
-          <PrintCube size={380} />
-        </div>
+        <PrintCubeGate minWidth={1024} size={380} className="shrink-0" />
 
         <LoginCard>
           <div className="mb-6 flex items-center gap-3">

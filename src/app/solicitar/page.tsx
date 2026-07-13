@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { AnimatedBackground } from "@/components/animated-background";
-import { PrintCube } from "@/components/print-cube";
+import { PrintCubeGate } from "@/components/print-cube-gate";
 import { SolicitarForm } from "./solicitar-form";
 
 export default async function SolicitarPage() {
@@ -11,9 +11,7 @@ export default async function SolicitarPage() {
       <AnimatedBackground intensity="hero" />
 
       <div className="flex w-full max-w-4xl items-center justify-center gap-8">
-        <div className="hidden shrink-0 xl:block">
-          <PrintCube size={320} />
-        </div>
+        <PrintCubeGate minWidth={1280} size={320} className="shrink-0" />
 
         <div className="card relative w-full max-w-lg !bg-[var(--surface-solid)]/90 p-8">
           <h1 className="mb-1 text-xl font-semibold text-neutral-900 dark:text-white">
