@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { updateSettings } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
-import { Input, Label, FieldError } from "@/components/ui/input";
+import { Input, Label, FieldError, Hint } from "@/components/ui/input";
 
 type SettingsData = {
   nomeLoja: string;
@@ -46,12 +46,19 @@ export function SettingsForm({ settings }: { settings: SettingsData }) {
       </div>
 
       <div className="card p-4">
-        <h2 className="mb-4 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        <h2 className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
           Padrões da calculadora de custo/preço
         </h2>
+        <p className="mb-4 mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+          Só preenchem os campos de um item novo automaticamente — você ainda pode ajustar cada um na hora de montar o
+          orçamento/pedido.
+        </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
-            <Label htmlFor="valorPadraoKwh">Valor padrão do kWh</Label>
+            <Label htmlFor="valorPadraoKwh" className="flex items-center gap-1">
+              Valor padrão do kWh
+              <Hint text="Preço da energia elétrica na sua região, em R$ por kWh (confira na sua conta de luz)." />
+            </Label>
             <Input id="valorPadraoKwh" name="valorPadraoKwh" type="number" step="0.01" defaultValue={settings.valorPadraoKwh} />
           </div>
           <div>
@@ -69,7 +76,10 @@ export function SettingsForm({ settings }: { settings: SettingsData }) {
             />
           </div>
           <div>
-            <Label htmlFor="margemLucroPadraoPercent">Margem de lucro padrão (%)</Label>
+            <Label htmlFor="margemLucroPadraoPercent" className="flex items-center gap-1">
+              Margem de lucro padrão (%)
+              <Hint text="Percentual de lucro desejado sobre o custo total da peça." />
+            </Label>
             <Input
               id="margemLucroPadraoPercent"
               name="margemLucroPadraoPercent"
@@ -79,11 +89,17 @@ export function SettingsForm({ settings }: { settings: SettingsData }) {
             />
           </div>
           <div>
-            <Label htmlFor="taxaMinimaPedido">Taxa mínima por pedido</Label>
+            <Label htmlFor="taxaMinimaPedido" className="flex items-center gap-1">
+              Taxa mínima por pedido
+              <Hint text="Valor mínimo a cobrar por pedido, mesmo se a conta der um valor menor que isso." />
+            </Label>
             <Input id="taxaMinimaPedido" name="taxaMinimaPedido" type="number" step="0.01" defaultValue={settings.taxaMinimaPedido} />
           </div>
           <div>
-            <Label htmlFor="percentualDesperdicioPadrao">Desperdício padrão (%)</Label>
+            <Label htmlFor="percentualDesperdicioPadrao" className="flex items-center gap-1">
+              Desperdício padrão (%)
+              <Hint text="Percentual de material perdido com purga/falhas de impressão, somado ao peso da peça." />
+            </Label>
             <Input
               id="percentualDesperdicioPadrao"
               name="percentualDesperdicioPadrao"

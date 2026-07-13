@@ -1,3 +1,4 @@
+import { HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
@@ -22,6 +23,14 @@ export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLab
       className={cn("mb-1 block text-sm font-medium text-neutral-700 dark:text-neutral-300", className)}
       {...props}
     />
+  );
+}
+
+export function Hint({ text }: { text: string }) {
+  return (
+    <span title={text} className="inline-flex shrink-0 text-neutral-400 dark:text-neutral-500">
+      <HelpCircle size={13} />
+    </span>
   );
 }
 
