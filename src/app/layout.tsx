@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   description: "Sistema de gestão para operação de impressão 3D sob encomenda",
 };
 
+// Roda as funções perto do banco (Neon em sa-east-1/São Paulo) — sem isso, toda query
+// cruza o continente até a região padrão da Vercel (Washington, D.C.).
+export const preferredRegion = "gru1";
+
 export default function RootLayout({
   children,
 }: Readonly<{
