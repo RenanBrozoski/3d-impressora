@@ -25,6 +25,7 @@ export type InsumoRef = {
   nome: string;
   material: string | null;
   cor: string | null;
+  corHex: string | null;
   precoPorUnidade: number;
 };
 

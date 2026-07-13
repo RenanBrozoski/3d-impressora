@@ -13,11 +13,16 @@ export function SidebarNav({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const visibleItems = NAV_ITEMS.filter((item) => !item.adminOnly || papel === "ADMIN");
+  const matches = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const bestMatch = visibleItems
+    .filter((item) => matches(item.href))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 
   return (
     <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
-      {NAV_ITEMS.filter((item) => !item.adminOnly || papel === "ADMIN").map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+      {visibleItems.map((item) => {
+        const isActive = item.href === bestMatch?.href;
         const Icon = item.icon;
         return (
           <Link key={item.href} href={item.href} onClick={onNavigate} className="relative">

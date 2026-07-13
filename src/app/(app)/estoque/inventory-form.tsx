@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { createInventoryItem, updateInventoryItem } from "@/app/actions/inventory";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea, Select, FieldError } from "@/components/ui/input";
@@ -12,6 +12,8 @@ type InventoryItemData = {
   marca: string | null;
   material: string | null;
   cor: string | null;
+  corHex: string | null;
+  capacidadeMaxima: number | null;
   unidade: string;
   quantidadeAtual: number;
   quantidadeMinima: number;
@@ -21,9 +23,19 @@ type InventoryItemData = {
   observacoes: string | null;
 };
 
-export function InventoryForm({ item, onSuccess }: { item?: InventoryItemData; onSuccess: () => void }) {
+export function InventoryForm({
+  item,
+  onSuccess,
+  defaultTipo,
+}: {
+  item?: InventoryItemData;
+  onSuccess: () => void;
+  defaultTipo?: string;
+}) {
   const action = item ? updateInventoryItem : createInventoryItem;
   const [state, formAction, pending] = useActionState(action, undefined);
+  const [tipo, setTipo] = useState(item?.tipo ?? defaultTipo ?? "FILAMENTO");
+  const mostraCampoVisual = tipo === "FILAMENTO" || tipo === "RESINA";
 
   useEffect(() => {
     if (state?.ok) onSuccess();
@@ -40,7 +52,7 @@ export function InventoryForm({ item, onSuccess }: { item?: InventoryItemData; o
         </div>
         <div>
           <Label htmlFor="tipo">Tipo *</Label>
-          <Select id="tipo" name="tipo" defaultValue={item?.tipo ?? "FILAMENTO"} required>
+          <Select id="tipo" name="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} required>
             <option value="FILAMENTO">Filamento</option>
             <option value="RESINA">Resina</option>
             <option value="EMBALAGEM">Embalagem</option>
@@ -65,6 +77,26 @@ export function InventoryForm({ item, onSuccess }: { item?: InventoryItemData; o
           <Input id="cor" name="cor" defaultValue={item?.cor ?? ""} />
         </div>
       </div>
+
+      {mostraCampoVisual && (
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="corHex">Amostra de cor</Label>
+            <Input id="corHex" name="corHex" type="color" defaultValue={item?.corHex ?? "#a78bfa"} className="h-10 px-2" />
+          </div>
+          <div className="col-span-2">
+            <Label htmlFor="capacidadeMaxima">Capacidade da bobina/embalagem cheia</Label>
+            <Input
+              id="capacidadeMaxima"
+              name="capacidadeMaxima"
+              type="number"
+              step="0.01"
+              placeholder="ex: 1 (para uma bobina de 1kg)"
+              defaultValue={item?.capacidadeMaxima ?? ""}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-4 gap-4">
         <div>

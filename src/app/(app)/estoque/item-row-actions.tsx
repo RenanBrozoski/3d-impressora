@@ -14,6 +14,8 @@ type InventoryItemData = {
   marca: string | null;
   material: string | null;
   cor: string | null;
+  corHex: string | null;
+  capacidadeMaxima: number | null;
   unidade: string;
   quantidadeAtual: number;
   quantidadeMinima: number;

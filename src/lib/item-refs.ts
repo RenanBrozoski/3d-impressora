@@ -10,7 +10,7 @@ export async function getItemEditorRefs(): Promise<ItemEditorRefs> {
     }),
     db.inventoryItem.findMany({
       where: { tipo: { in: ["FILAMENTO", "RESINA"] } },
-      select: { id: true, nome: true, material: true, cor: true, precoPorUnidade: true },
+      select: { id: true, nome: true, material: true, cor: true, corHex: true, precoPorUnidade: true },
       orderBy: { nome: "asc" },
     }),
     db.printer.findMany({

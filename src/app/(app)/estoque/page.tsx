@@ -79,7 +79,13 @@ export default async function EstoquePage({
               return (
                 <tr key={item.id} className="hover:bg-[var(--accent)]/5">
                   <td className="px-4 py-3">
-                    <Link href={`/estoque/${item.id}`} className="font-medium text-neutral-900 hover:underline dark:text-white">
+                    <Link href={`/estoque/${item.id}`} className="flex items-center gap-2 font-medium text-neutral-900 hover:underline dark:text-white">
+                      {item.corHex && (
+                        <span
+                          className="inline-block h-3 w-3 shrink-0 rounded-full border border-[var(--surface-border)]"
+                          style={{ backgroundColor: item.corHex }}
+                        />
+                      )}
                       {item.nome}
                     </Link>
                     {item.fornecedor && <p className="text-xs text-neutral-500 dark:text-neutral-400">{item.fornecedor}</p>}

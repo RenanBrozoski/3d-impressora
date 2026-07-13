@@ -19,6 +19,7 @@ export function ItemCard({
   onRemove: () => void;
 }) {
   const resultado = calcular({ ...item.calc, quantidade: item.quantidade });
+  const filamentoSelecionado = refs.insumos.find((i) => i.id === item.inventoryItemId);
 
   function set(patch: Partial<ItemDraft>) {
     onChange({ ...item, ...patch });
@@ -111,7 +112,16 @@ export function ItemCard({
 
       <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-4">
         <div>
-          <Label>Insumo de estoque</Label>
+          <Label className="flex items-center gap-1.5">
+            Insumo de estoque
+            {filamentoSelecionado?.corHex && (
+              <span
+                className="inline-block h-3 w-3 rounded-full border border-[var(--surface-border)]"
+                style={{ backgroundColor: filamentoSelecionado.corHex }}
+                title={filamentoSelecionado.cor ?? ""}
+              />
+            )}
+          </Label>
           <Select value={item.inventoryItemId ?? ""} onChange={(e) => onInsumoChange(e.target.value)}>
             <option value="">Selecionar para puxar preço...</option>
             {refs.insumos.map((i) => (

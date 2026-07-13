@@ -337,6 +337,8 @@ model InventoryItem {
   marca            String?
   material         String?
   cor              String?
+  corHex           String? // cor em hex (#a78bfa) pra mostrar uma amostra visual — usado por filamento/resina
+  capacidadeMaxima Float? // peso/volume nominal de uma bobina/embalagem cheia, na mesma unidade — usado pra barra de % restante
   unidade          UnidadeMedida
   quantidadeAtual  Float             @default(0)
   quantidadeMinima Float             @default(0)

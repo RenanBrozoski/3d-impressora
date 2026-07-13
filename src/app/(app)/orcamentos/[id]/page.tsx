@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -12,7 +13,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
     where: { id: Number(id) },
     include: {
       customer: true,
-      items: true,
+      items: { include: { inventoryItem: { select: { id: true, nome: true, corHex: true } } } },
       order: { select: { id: true, numero: true } },
       clientRequest: { include: { attachments: true } },
     },
@@ -98,7 +99,19 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
               <tr key={item.id}>
                 <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{item.nomePeca}</td>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-                  {[item.material, item.cor].filter(Boolean).join(" / ") || "-"}
+                  {item.inventoryItem ? (
+                    <Link href={`/estoque/${item.inventoryItem.id}`} className="flex items-center gap-1.5 hover:underline print:no-underline">
+                      {item.inventoryItem.corHex && (
+                        <span
+                          className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-[var(--surface-border)]"
+                          style={{ backgroundColor: item.inventoryItem.corHex }}
+                        />
+                      )}
+                      {[item.material, item.cor].filter(Boolean).join(" / ") || item.inventoryItem.nome}
+                    </Link>
+                  ) : (
+                    [item.material, item.cor].filter(Boolean).join(" / ") || "-"
+                  )}
                 </td>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{item.quantidade}</td>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{formatCurrency(item.valorUnitario)}</td>

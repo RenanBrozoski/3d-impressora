@@ -6,6 +6,8 @@ export const InventoryItemSchema = z.object({
   marca: z.string().trim().optional(),
   material: z.string().trim().optional(),
   cor: z.string().trim().optional(),
+  corHex: z.string().trim().optional(),
+  capacidadeMaxima: z.union([z.literal(""), z.coerce.number().positive()]).optional().transform((v) => (v === "" ? undefined : v)),
   unidade: z.enum(["KG", "G", "UNIDADE", "LITRO", "ML"]),
   quantidadeAtual: z.coerce.number().nonnegative().default(0),
   quantidadeMinima: z.coerce.number().nonnegative().default(0),

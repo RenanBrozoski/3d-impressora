@@ -19,6 +19,8 @@ function parseInventoryForm(formData: FormData) {
     marca: formValue(formData, "marca"),
     material: formValue(formData, "material"),
     cor: formValue(formData, "cor"),
+    corHex: formValue(formData, "corHex"),
+    capacidadeMaxima: formValue(formData, "capacidadeMaxima"),
     unidade: formValue(formData, "unidade"),
     quantidadeAtual: formValue(formData, "quantidadeAtual"),
     quantidadeMinima: formValue(formData, "quantidadeMinima"),
@@ -38,6 +40,7 @@ export async function createInventoryItem(_state: ActionState, formData: FormDat
   const { dataCompra, ...data } = parsed.data;
   await db.inventoryItem.create({ data: { ...data, dataCompra: dataCompra ? new Date(dataCompra) : null } });
   revalidatePath("/estoque");
+  revalidatePath("/estoque/filamentos");
   return { ok: true };
 }
 
@@ -52,6 +55,7 @@ export async function updateInventoryItem(_state: ActionState, formData: FormDat
   const { dataCompra, ...data } = parsed.data;
   await db.inventoryItem.update({ where: { id }, data: { ...data, dataCompra: dataCompra ? new Date(dataCompra) : null } });
   revalidatePath("/estoque");
+  revalidatePath("/estoque/filamentos");
   return { ok: true };
 }
 
@@ -86,6 +90,7 @@ export async function registerMovement(itemId: number, _state: ActionState, form
   ]);
 
   revalidatePath("/estoque");
+  revalidatePath("/estoque/filamentos");
   revalidatePath(`/estoque/${itemId}`);
   return { ok: true };
 }
