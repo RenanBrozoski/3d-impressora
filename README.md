@@ -69,8 +69,9 @@ src/app/solicitar/     formulário público de solicitação de orçamento
 src/app/acompanhar/    página pública de acompanhamento de pedido
 src/app/actions/       Server Actions (regras de negócio de cada módulo)
 src/lib/               calculadora, sessão/auth, relatórios, validações Zod
-storage/uploads/       arquivos enviados (STL/OBJ/3MF, fotos) — criado sob demanda
 ```
+
+Arquivos enviados (STL/OBJ/3MF, fotos) ficam no [Vercel Blob](https://vercel.com/docs/storage/vercel-blob), não no disco local.
 
 ## Backup do banco
 
@@ -79,9 +80,9 @@ Configurações → **Baixar backup do banco** gera um arquivo `.json` com todas
 ## Deploy na Vercel (gratuito)
 
 1. Suba este repositório no GitHub e importe-o em [vercel.com/new](https://vercel.com/new).
-2. Em **Environment Variables**, configure `DATABASE_URL` (a mesma connection string do Neon) e `SESSION_SECRET`.
-3. No primeiro deploy, rode `npx prisma migrate deploy` apontando para o mesmo `DATABASE_URL` (a partir da sua máquina, ou via `vercel env pull` + o comando local) para aplicar as migrations no banco de produção.
-4. **Uploads (STL/OBJ/3MF, fotos)**: hoje ficam em `storage/uploads` no disco local, o que **não funciona na Vercel** (sistema de arquivos é temporário lá). Antes de depender do envio de arquivos em produção, é preciso trocar por um storage externo (ex.: Vercel Blob).
+2. Em **Storage**, crie um **Blob Store** e conecte-o ao projeto — isso injeta `BLOB_READ_WRITE_TOKEN` automaticamente nas variáveis de ambiente.
+3. Em **Environment Variables**, configure também `DATABASE_URL` (a mesma connection string do Neon) e `SESSION_SECRET`.
+4. No primeiro deploy, rode `npx prisma migrate deploy` apontando para o mesmo `DATABASE_URL` (a partir da sua máquina, ou via `vercel env pull` + o comando local) para aplicar as migrations no banco de produção.
 
 ## Migrações do banco
 

@@ -69,7 +69,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
             {quote.clientRequest.attachments.map((a) => (
               <a
                 key={a.id}
-                href={`/api/uploads/${a.caminho}`}
+                href={`/api/uploads/${encodeURIComponent(a.caminho)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm text-neutral-700 transition hover:border-[var(--surface-border-hover)] dark:text-neutral-300"

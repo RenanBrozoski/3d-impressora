@@ -49,7 +49,7 @@ export default async function SolicitacaoDetailPage({ params }: { params: Promis
         {request.attachments.map((a) => (
           <a
             key={a.id}
-            href={`/api/uploads/${a.caminho}`}
+            href={`/api/uploads/${encodeURIComponent(a.caminho)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="card p-3 text-center text-sm text-neutral-700 dark:text-neutral-300"

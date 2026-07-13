@@ -1,34 +1,31 @@
 import { NextResponse } from "next/server";
-import { readFile, stat } from "node:fs/promises";
-import path from "node:path";
 import { verifySession } from "@/lib/dal";
-import { resolveUploadPath } from "@/lib/upload";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ path: string[] }> }) {
   await verifySession();
 
   const { path: segments } = await params;
-  const storedName = segments[segments.length - 1];
-  const filePath = resolveUploadPath(storedName);
+  const blobUrl = decodeURIComponent(segments.join("/"));
 
+  let parsed: URL;
   try {
-    await stat(filePath);
+    parsed = new URL(blobUrl);
   } catch {
     return NextResponse.json({ erro: "Arquivo não encontrado." }, { status: 404 });
   }
 
-  const buffer = await readFile(filePath);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType =
-    {
-      ".png": "image/png",
-      ".jpg": "image/jpeg",
-      ".jpeg": "image/jpeg",
-      ".webp": "image/webp",
-      ".pdf": "application/pdf",
-    }[ext] ?? "application/octet-stream";
+  if (!parsed.hostname.endsWith(".public.blob.vercel-storage.com")) {
+    return NextResponse.json({ erro: "Arquivo não encontrado." }, { status: 404 });
+  }
 
-  return new NextResponse(new Uint8Array(buffer), {
-    headers: { "Content-Type": contentType },
+  const upstream = await fetch(parsed);
+  if (!upstream.ok) {
+    return NextResponse.json({ erro: "Arquivo não encontrado." }, { status: 404 });
+  }
+
+  return new NextResponse(upstream.body, {
+    headers: {
+      "Content-Type": upstream.headers.get("content-type") ?? "application/octet-stream",
+    },
   });
 }
