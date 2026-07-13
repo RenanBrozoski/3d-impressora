@@ -3,6 +3,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input, Select } from "@/components/ui/input";
 import { PRODUCT_STATUS_COLOR, PRODUCT_STATUS_LABEL } from "@/lib/status";
+import { getItemEditorRefs } from "@/lib/item-refs";
 import { NovoProdutoButton } from "./novo-produto-button";
 import { ProductRowActions } from "./product-row-actions";
 import { EmptyState } from "@/components/empty-state";
@@ -13,6 +14,8 @@ export default async function ProdutosPage({
   searchParams: Promise<{ q?: string; categoria?: string; status?: string }>;
 }) {
   const { q, categoria, status } = await searchParams;
+
+  const refs = await getItemEditorRefs();
 
   const categorias = await db.product
     .findMany({ select: { categoria: true }, distinct: ["categoria"] })
@@ -33,7 +36,7 @@ export default async function ProdutosPage({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">Produtos</h1>
-        <NovoProdutoButton />
+        <NovoProdutoButton refs={refs} />
       </div>
 
       <form className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3" method="get">
@@ -89,7 +92,7 @@ export default async function ProdutosPage({
             </div>
 
             <div className="mt-3">
-              <ProductRowActions product={product} />
+              <ProductRowActions product={product} refs={refs} />
             </div>
           </div>
         ))}
