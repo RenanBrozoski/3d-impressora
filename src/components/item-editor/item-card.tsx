@@ -93,8 +93,9 @@ export function ItemCard({
             <Input
               type="number"
               min={1}
-              value={item.quantidade}
-              onChange={(e) => set({ quantidade: Math.max(1, Number(e.target.value) || 1) })}
+              value={item.quantidade || ""}
+              onChange={(e) => set({ quantidade: e.target.value === "" ? 0 : Number(e.target.value) })}
+              onBlur={() => set({ quantidade: Math.max(1, item.quantidade || 1) })}
             />
           </div>
         </div>
@@ -253,8 +254,8 @@ function NumField({
         type="number"
         step={step}
         min={0}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
       />
     </div>
   );
