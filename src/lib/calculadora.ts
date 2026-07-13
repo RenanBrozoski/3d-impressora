@@ -1,8 +1,14 @@
+export type MaterialExtra = {
+  pesoG: number;
+  precoKg: number;
+};
+
 export type CalculadoraInput = {
   quantidade: number;
   pesoUnidadeG: number;
   precoKgMaterial: number;
   percentualDesperdicio: number;
+  materiaisExtras?: MaterialExtra[];
   tempoImpressaoH: number;
   potenciaImpressoraW: number;
   valorKwh: number;
@@ -53,8 +59,13 @@ export const CALCULADORA_INPUT_VAZIO: CalculadoraInput = {
 };
 
 export function calcular(input: CalculadoraInput): CalculadoraResultado {
-  const custoMaterial =
+  const custoMaterialPrimario =
     (input.pesoUnidadeG / 1000) * input.precoKgMaterial * (1 + input.percentualDesperdicio / 100);
+  const custoMateriaisExtras = (input.materiaisExtras ?? []).reduce(
+    (soma, m) => soma + (m.pesoG / 1000) * m.precoKg * (1 + input.percentualDesperdicio / 100),
+    0,
+  );
+  const custoMaterial = custoMaterialPrimario + custoMateriaisExtras;
   const custoEnergia = (input.potenciaImpressoraW / 1000) * input.tempoImpressaoH * input.valorKwh;
   const custoMaquina = input.custoHoraMaquina * input.tempoImpressaoH;
   const custoMaoObra = input.tempoMaoObraH * input.valorHoraMaoObra;

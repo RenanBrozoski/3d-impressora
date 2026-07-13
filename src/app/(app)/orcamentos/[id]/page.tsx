@@ -13,7 +13,12 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
     where: { id: Number(id) },
     include: {
       customer: true,
-      items: { include: { inventoryItem: { select: { id: true, nome: true, corHex: true } } } },
+      items: {
+        include: {
+          inventoryItem: { select: { id: true, nome: true, corHex: true } },
+          materiaisExtras: { include: { inventoryItem: { select: { id: true, nome: true, corHex: true } } } },
+        },
+      },
       order: { select: { id: true, numero: true } },
       clientRequest: { include: { attachments: true } },
     },
@@ -111,6 +116,25 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
                     </Link>
                   ) : (
                     [item.material, item.cor].filter(Boolean).join(" / ") || "-"
+                  )}
+                  {item.materiaisExtras.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {item.materiaisExtras.map((m) => (
+                        <Link
+                          key={m.id}
+                          href={`/estoque/${m.inventoryItem.id}`}
+                          className="flex items-center gap-1 text-xs text-neutral-400 hover:underline print:no-underline dark:text-neutral-500"
+                        >
+                          {m.inventoryItem.corHex && (
+                            <span
+                              className="inline-block h-2 w-2 shrink-0 rounded-full border border-[var(--surface-border)]"
+                              style={{ backgroundColor: m.inventoryItem.corHex }}
+                            />
+                          )}
+                          +{m.inventoryItem.nome}
+                        </Link>
+                      ))}
+                    </div>
                   )}
                 </td>
                 <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{item.quantidade}</td>

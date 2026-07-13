@@ -1,12 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { calcular } from "@/lib/calculadora";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea, Select, Hint } from "@/components/ui/input";
-import type { ItemDraft, ItemEditorRefs } from "./types";
+import type { ItemDraft, ItemEditorRefs, ItemMaterialExtraDraft } from "./types";
 
 export function ItemCard({
   item,
@@ -19,17 +19,23 @@ export function ItemCard({
   onChange: (item: ItemDraft) => void;
   onRemove: () => void;
 }) {
-  const resultado = calcular({ ...item.calc, quantidade: item.quantidade });
+  const resultado = calcular({
+    ...item.calc,
+    quantidade: item.quantidade,
+    materiaisExtras: item.extras.map((e) => ({
+      pesoG: e.pesoG,
+      precoKg: refs.insumos.find((i) => i.id === e.inventoryItemId)?.precoPorUnidade ?? 0,
+    })),
+  });
   const filamentoSelecionado = refs.insumos.find((i) => i.id === item.inventoryItemId);
 
-  const pesoTotalG = item.calc.pesoUnidadeG * item.quantidade;
-  const necessario = filamentoSelecionado
-    ? filamentoSelecionado.unidade === "KG"
-      ? pesoTotalG / 1000
-      : filamentoSelecionado.unidade === "G"
-        ? pesoTotalG
-        : item.quantidade
-    : 0;
+  function necessarioDe(insumo: (typeof refs.insumos)[number] | undefined, pesoUnidadeG: number) {
+    if (!insumo) return 0;
+    const pesoTotalG = pesoUnidadeG * item.quantidade;
+    return insumo.unidade === "KG" ? pesoTotalG / 1000 : insumo.unidade === "G" ? pesoTotalG : item.quantidade;
+  }
+
+  const necessario = necessarioDe(filamentoSelecionado, item.calc.pesoUnidadeG);
   const estoqueInsuficiente = !!filamentoSelecionado && necessario > filamentoSelecionado.quantidadeAtual;
 
   function set(patch: Partial<ItemDraft>) {
@@ -38,6 +44,23 @@ export function ItemCard({
 
   function setCalc(patch: Partial<ItemDraft["calc"]>) {
     onChange({ ...item, calc: { ...item.calc, ...patch } });
+  }
+
+  function addExtra() {
+    const novo: ItemMaterialExtraDraft = {
+      clientId: `extra-${Math.random().toString(36).slice(2)}`,
+      inventoryItemId: null,
+      pesoG: 0,
+    };
+    set({ extras: [...item.extras, novo] });
+  }
+
+  function updateExtra(clientId: string, patch: Partial<ItemMaterialExtraDraft>) {
+    set({ extras: item.extras.map((e) => (e.clientId === clientId ? { ...e, ...patch } : e)) });
+  }
+
+  function removeExtra(clientId: string) {
+    set({ extras: item.extras.filter((e) => e.clientId !== clientId) });
   }
 
   function onProdutoChange(produtoId: string) {
@@ -165,6 +188,71 @@ export function ItemCard({
           hint="Peso de uma peça, em gramas — dá pra pesar na balança ou olhar a estimativa do seu slicer."
         />
       </div>
+
+      {item.extras.length > 0 && (
+        <div className="mb-3 space-y-2">
+          {item.extras.map((extra) => {
+            const insumoExtra = refs.insumos.find((i) => i.id === extra.inventoryItemId);
+            const necessarioExtra = necessarioDe(insumoExtra, extra.pesoG);
+            const insuficienteExtra = !!insumoExtra && necessarioExtra > insumoExtra.quantidadeAtual;
+            return (
+              <div key={extra.clientId} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                <div>
+                  <Label className="flex items-center gap-1.5">
+                    Insumo adicional
+                    {insumoExtra?.corHex && (
+                      <span
+                        className="inline-block h-3 w-3 rounded-full border border-[var(--surface-border)]"
+                        style={{ backgroundColor: insumoExtra.corHex }}
+                        title={insumoExtra.cor ?? ""}
+                      />
+                    )}
+                  </Label>
+                  <Select
+                    value={extra.inventoryItemId ?? ""}
+                    onChange={(e) => updateExtra(extra.clientId, { inventoryItemId: Number(e.target.value) || null })}
+                  >
+                    <option value="">Selecionar...</option>
+                    {refs.insumos.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.nome}
+                      </option>
+                    ))}
+                  </Select>
+                  {insuficienteExtra && insumoExtra && (
+                    <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
+                      Estoque insuficiente: disponível {formatNumber(insumoExtra.quantidadeAtual)}{" "}
+                      {insumoExtra.unidade.toLowerCase()}, precisa de {formatNumber(necessarioExtra)}{" "}
+                      {insumoExtra.unidade.toLowerCase()}.
+                    </p>
+                  )}
+                </div>
+                <NumField
+                  label="Peso desse insumo (g)"
+                  value={extra.pesoG}
+                  onChange={(v) => updateExtra(extra.clientId, { pesoG: v })}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeExtra(extra.clientId)}
+                  aria-label="Remover insumo adicional"
+                  className="mt-6 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={addExtra}
+        className="mb-3 flex items-center gap-1.5 text-sm text-[var(--accent)] hover:underline"
+      >
+        <Plus size={14} />
+        Adicionar insumo (impressão colorida/multimaterial)
+      </button>
 
       <SectionLabel>Impressão</SectionLabel>
       <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">

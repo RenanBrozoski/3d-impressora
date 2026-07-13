@@ -1,8 +1,14 @@
 import { z } from "zod";
 
+const ItemMaterialExtraSchema = z.object({
+  inventoryItemId: z.number().int().positive(),
+  pesoG: z.coerce.number().positive(),
+});
+
 export const ItemPayloadSchema = z.object({
   produtoId: z.number().nullable().optional(),
   inventoryItemId: z.number().nullable().optional(),
+  extras: z.array(ItemMaterialExtraSchema).optional().default([]),
   nomePeca: z.string().trim().min(1, "Informe o nome da peça."),
   quantidade: z.coerce.number().int().min(1, "Quantidade mínima é 1."),
   material: z.string().trim().optional(),

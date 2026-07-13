@@ -44,10 +44,16 @@ export function QuoteForm({
     }
 
     const payloadItems = items.map((item) => {
-      const resultado = calcular({ ...item.calc, quantidade: item.quantidade });
+      const extras = item.extras.filter((e) => e.inventoryItemId != null);
+      const materiaisExtras = extras.map((e) => ({
+        pesoG: e.pesoG,
+        precoKg: refs.insumos.find((i) => i.id === e.inventoryItemId)?.precoPorUnidade ?? 0,
+      }));
+      const resultado = calcular({ ...item.calc, quantidade: item.quantidade, materiaisExtras });
       return {
         produtoId: item.produtoId,
         inventoryItemId: item.inventoryItemId,
+        extras: extras.map((e) => ({ inventoryItemId: e.inventoryItemId as number, pesoG: e.pesoG })),
         nomePeca: item.nomePeca,
         quantidade: item.quantidade,
         material: item.material,

@@ -18,37 +18,60 @@ type ProductionStatusValue = (typeof PRODUCTION_STATUS_VALUES)[number];
 
 const DEDUCAO_STATUSES = ["IMPRIMINDO"] as const;
 
+function converterParaUnidade(pesoTotalG: number, quantidade: number, unidade: string) {
+  return unidade === "KG" ? pesoTotalG / 1000 : unidade === "G" ? pesoTotalG : quantidade;
+}
+
 async function baixarEstoqueSeNecessario(queueId: number) {
   const queue = await db.productionQueue.findUnique({
     where: { id: queueId },
-    include: { orderItem: { include: { inventoryItem: true, order: { select: { numero: true } } } } },
+    include: {
+      orderItem: {
+        include: { inventoryItem: true, materiaisExtras: { include: { inventoryItem: true } }, order: { select: { numero: true } } },
+      },
+    },
   });
   if (!queue || queue.estoqueBaixado) return;
 
   const { orderItem } = queue;
-  if (!orderItem.inventoryItemId || !orderItem.inventoryItem) return;
 
-  const pesoTotalG = (orderItem.pesoUnidadeG ?? 0) * orderItem.quantidade;
-  const quantidadeConsumida =
-    orderItem.inventoryItem.unidade === "KG" ? pesoTotalG / 1000 : orderItem.inventoryItem.unidade === "G" ? pesoTotalG : orderItem.quantidade;
+  const consumos: { inventoryItemId: number; unidade: string; quantidade: number }[] = [];
 
-  if (quantidadeConsumida <= 0) return;
+  if (orderItem.inventoryItemId && orderItem.inventoryItem) {
+    const pesoTotalG = (orderItem.pesoUnidadeG ?? 0) * orderItem.quantidade;
+    const quantidadeConsumida = converterParaUnidade(pesoTotalG, orderItem.quantidade, orderItem.inventoryItem.unidade);
+    if (quantidadeConsumida > 0) {
+      consumos.push({ inventoryItemId: orderItem.inventoryItemId, unidade: orderItem.inventoryItem.unidade, quantidade: quantidadeConsumida });
+    }
+  }
+
+  for (const extra of orderItem.materiaisExtras) {
+    const pesoTotalG = extra.pesoG * orderItem.quantidade;
+    const quantidadeConsumida = converterParaUnidade(pesoTotalG, orderItem.quantidade, extra.inventoryItem.unidade);
+    if (quantidadeConsumida > 0) {
+      consumos.push({ inventoryItemId: extra.inventoryItemId, unidade: extra.inventoryItem.unidade, quantidade: quantidadeConsumida });
+    }
+  }
+
+  if (consumos.length === 0) return;
 
   await db.$transaction([
-    db.inventoryItem.update({
-      where: { id: orderItem.inventoryItemId },
-      data: { quantidadeAtual: { decrement: quantidadeConsumida } },
-    }),
-    db.inventoryMovement.create({
-      data: {
-        inventoryItemId: orderItem.inventoryItemId,
-        tipo: "SAIDA",
-        origem: "PEDIDO",
-        quantidade: quantidadeConsumida,
-        orderItemId: orderItem.id,
-        motivo: `Baixa automática - pedido ${orderItem.order.numero} / ${orderItem.nomePeca}`,
-      },
-    }),
+    ...consumos.flatMap((c) => [
+      db.inventoryItem.update({
+        where: { id: c.inventoryItemId },
+        data: { quantidadeAtual: { decrement: c.quantidade } },
+      }),
+      db.inventoryMovement.create({
+        data: {
+          inventoryItemId: c.inventoryItemId,
+          tipo: "SAIDA",
+          origem: "PEDIDO",
+          quantidade: c.quantidade,
+          orderItemId: orderItem.id,
+          motivo: `Baixa automática - pedido ${orderItem.order.numero} / ${orderItem.nomePeca}`,
+        },
+      }),
+    ]),
     db.productionQueue.update({ where: { id: queueId }, data: { estoqueBaixado: true } }),
   ]);
 }

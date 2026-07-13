@@ -250,7 +250,8 @@ model QuoteItem {
   lucroEstimado   Float   @default(0)
   observacoes     String?
 
-  attachments Attachment[]
+  attachments     Attachment[]
+  materiaisExtras ItemMaterial[]
 
   @@map("quote_items")
 }
@@ -324,8 +325,24 @@ model OrderItem {
   attachments       Attachment[]
   filaProducao      ProductionQueue[] // mais de um registro quando há reimpressão
   movimentosEstoque InventoryMovement[]
+  materiaisExtras   ItemMaterial[]
 
   @@map("order_items")
+}
+
+// Insumos adicionais de um item — impressão multicolor/multimaterial usa mais de
+// um filamento na mesma peça, além do insumo "principal" já registrado no item.
+model ItemMaterial {
+  id              Int            @id @default(autoincrement())
+  quoteItemId     Int?
+  quoteItem       QuoteItem?     @relation(fields: [quoteItemId], references: [id], onDelete: Cascade)
+  orderItemId     Int?
+  orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  inventoryItemId Int
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id])
+  pesoG           Float
+
+  @@map("item_materials")
 }
 
 // ---------- Estoque ----------
@@ -350,9 +367,10 @@ model InventoryItem {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
-  movements  InventoryMovement[]
-  quoteItems QuoteItem[]
-  orderItems OrderItem[]
+  movements     InventoryMovement[]
+  quoteItems    QuoteItem[]
+  orderItems    OrderItem[]
+  itemMateriais ItemMaterial[]
 
   @@map("inventory_items")
 }

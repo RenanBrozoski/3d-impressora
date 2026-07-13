@@ -1,5 +1,11 @@
 import type { CalculadoraInput } from "@/lib/calculadora";
 
+export type ItemMaterialExtraDraft = {
+  clientId: string;
+  inventoryItemId: number | null;
+  pesoG: number;
+};
+
 export type ItemDraft = {
   clientId: string;
   produtoId: number | null;
@@ -10,6 +16,7 @@ export type ItemDraft = {
   cor: string;
   observacoes: string;
   calc: CalculadoraInput;
+  extras: ItemMaterialExtraDraft[];
 };
 
 export type ProdutoRef = {
@@ -71,6 +78,7 @@ export function novoItemDraft(settings: SettingsDefaults): ItemDraft {
     material: "",
     cor: "",
     observacoes: "",
+    extras: [],
     calc: {
       quantidade: 1,
       pesoUnidadeG: 0,

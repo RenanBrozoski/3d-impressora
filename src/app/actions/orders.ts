@@ -34,7 +34,13 @@ export async function createOrder(payload: OrderPayload) {
       formaPagamento,
       observacoes,
       valorTotal,
-      items: { create: items.map(({ produtoId, ...item }) => ({ ...item, productId: produtoId ?? null })) },
+      items: {
+        create: items.map(({ produtoId, extras, ...item }) => ({
+          ...item,
+          productId: produtoId ?? null,
+          materiaisExtras: { create: extras.map((e) => ({ inventoryItemId: e.inventoryItemId, pesoG: e.pesoG })) },
+        })),
+      },
     },
   });
 

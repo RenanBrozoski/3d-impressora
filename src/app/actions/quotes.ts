@@ -24,7 +24,13 @@ export async function createQuote(payload: QuotePayload) {
       observacoes,
       valorSugerido,
       valorFinal: valorSugerido,
-      items: { create: items.map(({ produtoId, ...item }) => ({ ...item, productId: produtoId ?? null })) },
+      items: {
+        create: items.map(({ produtoId, extras, ...item }) => ({
+          ...item,
+          productId: produtoId ?? null,
+          materiaisExtras: { create: extras.map((e) => ({ inventoryItemId: e.inventoryItemId, pesoG: e.pesoG })) },
+        })),
+      },
     },
   });
 
@@ -54,7 +60,13 @@ export async function updateQuote(id: number, payload: QuotePayload) {
         observacoes,
         valorSugerido,
         valorFinal: valorSugerido,
-        items: { create: items.map(({ produtoId, ...item }) => ({ ...item, productId: produtoId ?? null })) },
+        items: {
+          create: items.map(({ produtoId, extras, ...item }) => ({
+            ...item,
+            productId: produtoId ?? null,
+            materiaisExtras: { create: extras.map((e) => ({ inventoryItemId: e.inventoryItemId, pesoG: e.pesoG })) },
+          })),
+        },
       },
     }),
   ]);
@@ -74,7 +86,7 @@ export async function setQuoteStatus(id: number, status: "ENVIADO" | "APROVADO" 
 export async function convertQuoteToOrder(id: number) {
   await getCurrentUser();
 
-  const quote = await db.quote.findUnique({ where: { id }, include: { items: true } });
+  const quote = await db.quote.findUnique({ where: { id }, include: { items: { include: { materiaisExtras: true } } } });
   if (!quote) throw new Error("Orçamento não encontrado.");
   if (quote.status === "CONVERTIDO") throw new Error("Orçamento já foi convertido em pedido.");
 
@@ -115,6 +127,9 @@ export async function convertQuoteToOrder(id: number) {
           valorTotal: item.valorTotal,
           lucroEstimado: item.lucroEstimado,
           observacoes: item.observacoes,
+          materiaisExtras: {
+            create: item.materiaisExtras.map((m) => ({ inventoryItemId: m.inventoryItemId, pesoG: m.pesoG })),
+          },
         })),
       },
     },
