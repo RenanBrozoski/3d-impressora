@@ -9,6 +9,7 @@ type UserData = {
   id: number;
   nome: string;
   email: string;
+  username: string | null;
   papel: string;
   valorHora: number | null;
   ativo: boolean;
@@ -35,6 +36,11 @@ export function UserForm({ user, onSuccess }: { user?: UserData; onSuccess: () =
           <Input id="email" name="email" type="email" required />
         </div>
       )}
+
+      <div>
+        <Label htmlFor="username">Usuário (login alternativo ao e-mail)</Label>
+        <Input id="username" name="username" defaultValue={user?.username ?? ""} placeholder="ex: admin" />
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>

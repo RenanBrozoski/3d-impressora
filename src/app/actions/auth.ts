@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { createSession, deleteSession } from "@/lib/session";
 
 const LoginSchema = z.object({
-  email: z.string().trim().min(1, "Informe o e-mail."),
+  identificador: z.string().trim().min(1, "Informe o e-mail ou usuário."),
   senha: z.string().min(1, "Informe a senha."),
 });
 
@@ -17,25 +17,27 @@ export type LoginState =
 
 export async function login(_state: LoginState, formData: FormData): Promise<LoginState> {
   const validated = LoginSchema.safeParse({
-    email: formData.get("email"),
+    identificador: formData.get("identificador"),
     senha: formData.get("senha"),
   });
 
   if (!validated.success) {
-    return { erro: "Preencha e-mail e senha." };
+    return { erro: "Preencha e-mail (ou usuário) e senha." };
   }
 
-  const { email, senha } = validated.data;
+  const { identificador, senha } = validated.data;
 
-  const user = await db.user.findUnique({ where: { email } });
+  const user = await db.user.findFirst({
+    where: { OR: [{ email: identificador }, { username: identificador }] },
+  });
 
   if (!user || !user.ativo) {
-    return { erro: "E-mail ou senha inválidos." };
+    return { erro: "Credenciais inválidas." };
   }
 
   const senhaValida = await bcrypt.compare(senha, user.senhaHash);
   if (!senhaValida) {
-    return { erro: "E-mail ou senha inválidos." };
+    return { erro: "Credenciais inválidas." };
   }
 
   await createSession({ userId: user.id, nome: user.nome, papel: user.papel });

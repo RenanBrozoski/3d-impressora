@@ -14,6 +14,7 @@ export async function createUser(_state: ActionState, formData: FormData): Promi
   const parsed = NewUserSchema.safeParse({
     nome: formData.get("nome"),
     email: formData.get("email"),
+    username: formData.get("username"),
     senha: formData.get("senha"),
     papel: formData.get("papel"),
     valorHora: formData.get("valorHora"),
@@ -21,12 +22,16 @@ export async function createUser(_state: ActionState, formData: FormData): Promi
 
   if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Dados inválidos." };
 
-  const existente = await db.user.findUnique({ where: { email: parsed.data.email } });
-  if (existente) return { erro: "Já existe um usuário com esse e-mail." };
+  const username = parsed.data.username || undefined;
+
+  const existente = await db.user.findFirst({
+    where: { OR: [{ email: parsed.data.email }, ...(username ? [{ username }] : [])] },
+  });
+  if (existente) return { erro: "Já existe um usuário com esse e-mail ou usuário." };
 
   const senhaHash = await bcrypt.hash(parsed.data.senha, 10);
   await db.user.create({
-    data: { nome: parsed.data.nome, email: parsed.data.email, senhaHash, papel: parsed.data.papel, valorHora: parsed.data.valorHora },
+    data: { nome: parsed.data.nome, email: parsed.data.email, username, senhaHash, papel: parsed.data.papel, valorHora: parsed.data.valorHora },
   });
 
   revalidatePath("/configuracoes");
@@ -38,6 +43,7 @@ export async function updateUser(id: number, _state: ActionState, formData: Form
 
   const parsed = UpdateUserSchema.safeParse({
     nome: formData.get("nome"),
+    username: formData.get("username"),
     papel: formData.get("papel"),
     valorHora: formData.get("valorHora"),
     ativo: formData.get("ativo") === "on",
@@ -46,11 +52,20 @@ export async function updateUser(id: number, _state: ActionState, formData: Form
 
   if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Dados inválidos." };
 
-  const { novaSenha, ...rest } = parsed.data;
+  const { novaSenha, username, ...rest } = parsed.data;
+
+  if (username) {
+    const existente = await db.user.findFirst({ where: { username, id: { not: id } } });
+    if (existente) return { erro: "Já existe um usuário com esse usuário." };
+  }
 
   await db.user.update({
     where: { id },
-    data: { ...rest, ...(novaSenha ? { senhaHash: await bcrypt.hash(novaSenha, 10) } : {}) },
+    data: {
+      ...rest,
+      username: username || null,
+      ...(novaSenha ? { senhaHash: await bcrypt.hash(novaSenha, 10) } : {}),
+    },
   });
 
   revalidatePath("/configuracoes");

@@ -11,6 +11,7 @@ type UserData = {
   id: number;
   nome: string;
   email: string;
+  username: string | null;
   papel: string;
   valorHora: number | null;
   ativo: boolean;
@@ -36,7 +37,8 @@ export function UsersSection({ users }: { users: UserData[] }) {
             <div>
               <p className="text-sm font-medium text-neutral-900 dark:text-white">{u.nome}</p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {u.email} · {u.papel === "ADMIN" ? "Administrador" : "Operador"}
+                {u.email}
+                {u.username && ` · @${u.username}`} · {u.papel === "ADMIN" ? "Administrador" : "Operador"}
                 {u.valorHora != null && ` · R$ ${u.valorHora.toFixed(2)}/h`}
               </p>
             </div>

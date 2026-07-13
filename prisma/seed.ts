@@ -16,10 +16,11 @@ async function main() {
 
   await db.user.upsert({
     where: { email: "admin@impressao3d.local" },
-    update: {},
+    update: { username: "admin" },
     create: {
       nome: "Administrador",
       email: "admin@impressao3d.local",
+      username: "admin",
       senhaHash: senhaAdmin,
       papel: "ADMIN",
       valorHora: 25,
@@ -28,10 +29,11 @@ async function main() {
 
   await db.user.upsert({
     where: { email: "operador@impressao3d.local" },
-    update: {},
+    update: { username: "operador" },
     create: {
       nome: "Operador",
       email: "operador@impressao3d.local",
+      username: "operador",
       senhaHash: senhaOperador,
       papel: "OPERADOR",
       valorHora: 20,
@@ -45,8 +47,8 @@ async function main() {
   });
 
   console.log("Seed concluído.");
-  console.log("Login admin:    admin@impressao3d.local / admin123");
-  console.log("Login operador: operador@impressao3d.local / operador123");
+  console.log("Login admin:    admin@impressao3d.local (ou usuário: admin) / admin123");
+  console.log("Login operador: operador@impressao3d.local (ou usuário: operador) / operador123");
   console.log("Troque essas senhas no primeiro acesso.");
 }
 
