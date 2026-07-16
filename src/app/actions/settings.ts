@@ -27,7 +27,10 @@ export async function updateSettings(_state: ActionState, formData: FormData): P
 
   await db.settings.upsert({ where: { id: 1 }, update: parsed.data, create: { id: 1, ...parsed.data } });
 
-  revalidatePath("/configuracoes");
-  revalidatePath("/dashboard");
+  // Nome da loja e padrões da calculadora aparecem em toda a área logada (layout
+  // raiz) e em páginas públicas geradas estaticamente (/solicitar, /login) — sem
+  // revalidar a partir da raiz, essas páginas continuariam com o valor antigo em
+  // cache até o próximo deploy.
+  revalidatePath("/", "layout");
   return { ok: true };
 }
