@@ -81,9 +81,10 @@ export function calcular(input: CalculadoraInput): CalculadoraResultado {
 
   const custoTotalUnitario = Math.max(custoTotalBase, input.taxaMinima);
 
-  // Margem é sobre o preço de venda (não sobre o custo): margem% = lucro / preço.
-  const margem = Math.min(Math.max(input.margemLucroPercent, 0), 99.99) / 100;
-  const precoSugerido = margem > 0 ? custoTotalUnitario / (1 - margem) : custoTotalUnitario;
+  // Margem é markup sobre o custo (o jeito que se usa no dia a dia): margem% = lucro / custo.
+  // Ex.: margem 100% em cima de um custo de R$10 dá um preço de R$20 (dobro do custo).
+  const margem = Math.max(input.margemLucroPercent, 0) / 100;
+  const precoSugerido = custoTotalUnitario * (1 + margem);
   const valorUnitario = Math.max(precoSugerido - input.desconto, 0);
 
   const quantidade = Math.max(input.quantidade, 1);
@@ -91,7 +92,7 @@ export function calcular(input: CalculadoraInput): CalculadoraResultado {
   const custoTotalGeral = custoTotalUnitario * quantidade;
   const lucroUnitario = valorUnitario - custoTotalUnitario;
   const lucroTotal = valorTotal - custoTotalGeral;
-  const margemRealPercent = valorUnitario > 0 ? (lucroUnitario / valorUnitario) * 100 : 0;
+  const margemRealPercent = custoTotalUnitario > 0 ? (lucroUnitario / custoTotalUnitario) * 100 : 0;
 
   return {
     custoMaterial: round(custoMaterial),
