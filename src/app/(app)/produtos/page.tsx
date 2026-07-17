@@ -8,7 +8,7 @@ import { NovoProdutoButton } from "./novo-produto-button";
 import { ProductRowActions } from "./product-row-actions";
 import { EmptyState } from "@/components/empty-state";
 import { isModelo3DVisualizavel } from "@/lib/model-utils";
-import { Box } from "lucide-react";
+import { Box, ImageOff } from "lucide-react";
 
 export default async function ProdutosPage({
   searchParams,
@@ -66,16 +66,30 @@ export default async function ProdutosPage({
             className="flex flex-col card p-4"
           >
             <div className="mb-2 flex items-start justify-between gap-2">
-              <div>
-                <p className="flex items-center gap-1.5 font-medium text-neutral-900 dark:text-white">
-                  {product.nome}
-                  {product.attachments.some((a) => isModelo3DVisualizavel(a.nomeArquivo)) && (
-                    <Box size={14} className="text-[var(--accent)]" aria-label="Tem modelo 3D anexado" />
-                  )}
-                </p>
-                {product.categoria && (
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{product.categoria}</p>
+              <div className="flex items-start gap-3">
+                {product.fotoPath ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={`/api/uploads/${encodeURIComponent(product.fotoPath)}`}
+                    alt={product.nome}
+                    className="h-14 w-14 shrink-0 rounded-lg border border-[var(--surface-border)] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-[var(--surface-border)] bg-neutral-100 text-neutral-400 dark:bg-neutral-900 dark:text-neutral-600">
+                    <ImageOff size={20} />
+                  </div>
                 )}
+                <div>
+                  <p className="flex items-center gap-1.5 font-medium text-neutral-900 dark:text-white">
+                    {product.nome}
+                    {product.attachments.some((a) => isModelo3DVisualizavel(a.nomeArquivo)) && (
+                      <Box size={14} className="text-[var(--accent)]" aria-label="Tem modelo 3D anexado" />
+                    )}
+                  </p>
+                  {product.categoria && (
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">{product.categoria}</p>
+                  )}
+                </div>
               </div>
               <Badge color={PRODUCT_STATUS_COLOR[product.status]}>{PRODUCT_STATUS_LABEL[product.status]}</Badge>
             </div>

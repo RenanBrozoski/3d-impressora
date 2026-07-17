@@ -23,6 +23,7 @@ type ProductData = {
   margemSugeridaPercent: number | null;
   observacoesImpressao: string | null;
   status: string;
+  fotoPath: string | null;
   attachments: { id: number; nomeArquivo: string; caminho: string }[];
 };
 
@@ -41,6 +42,8 @@ export function ProductForm({
   const modeloExistente = product?.attachments.find((a) => isModelo3DVisualizavel(a.nomeArquivo));
   const [removerModelo, setRemoverModelo] = useState(false);
   const [mostrarViewer, setMostrarViewer] = useState(false);
+  const [removerFoto, setRemoverFoto] = useState(false);
+  const [novaFotoPreview, setNovaFotoPreview] = useState<string | null>(null);
 
   const [calc, setCalc] = useState<CalculadoraInput>({
     quantidade: 1,
@@ -112,6 +115,52 @@ export function ProductForm({
       <div>
         <Label htmlFor="descricao">Descrição</Label>
         <Textarea id="descricao" name="descricao" rows={2} defaultValue={product?.descricao ?? ""} />
+      </div>
+
+      <SectionLabel>Foto do produto</SectionLabel>
+      <div className="mb-4 flex items-start gap-3">
+        {novaFotoPreview || (product?.fotoPath && !removerFoto) ? (
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={novaFotoPreview ?? `/api/uploads/${encodeURIComponent(product!.fotoPath!)}`}
+              alt="Foto do produto"
+              className="h-20 w-20 rounded-lg border border-[var(--surface-border)] object-cover"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setRemoverFoto(true);
+                setNovaFotoPreview(null);
+              }}
+            >
+              Remover
+            </Button>
+          </div>
+        ) : (
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            {removerFoto ? "A foto será removida ao salvar." : "Nenhuma foto anexada ainda."}
+          </p>
+        )}
+      </div>
+      <input type="hidden" name="removerFoto" value={removerFoto ? "1" : ""} />
+      <div className="mb-4">
+        <Label htmlFor="foto">{product?.fotoPath ? "Substituir foto" : "Anexar foto"}</Label>
+        <Input
+          id="foto"
+          name="foto"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setRemoverFoto(false);
+              setNovaFotoPreview(URL.createObjectURL(file));
+            }
+          }}
+        />
       </div>
 
       <SectionLabel>Modelo 3D</SectionLabel>

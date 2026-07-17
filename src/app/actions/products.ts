@@ -45,6 +45,21 @@ async function salvarModelo3d(productId: number, formData: FormData) {
   }
 }
 
+async function salvarFoto(productId: number, formData: FormData) {
+  const removerFoto = formValue(formData, "removerFoto") === "1";
+  const arquivo = formData.get("foto");
+  const temArquivoNovo = arquivo instanceof File && arquivo.size > 0;
+
+  if (!removerFoto && !temArquivoNovo) return;
+
+  if (temArquivoNovo) {
+    const salvo = await saveUploadedFile(arquivo as File);
+    await db.product.update({ where: { id: productId }, data: { fotoPath: salvo.caminho } });
+  } else {
+    await db.product.update({ where: { id: productId }, data: { fotoPath: null } });
+  }
+}
+
 export async function createProduct(_state: ActionState, formData: FormData): Promise<ActionState> {
   await getCurrentUser();
   const parsed = parseProductForm(formData);
@@ -57,6 +72,7 @@ export async function createProduct(_state: ActionState, formData: FormData): Pr
 
   try {
     await salvarModelo3d(product.id, formData);
+    await salvarFoto(product.id, formData);
   } catch (err) {
     if (err instanceof UploadError) return { erro: err.message };
     throw err;
@@ -80,6 +96,7 @@ export async function updateProduct(_state: ActionState, formData: FormData): Pr
 
   try {
     await salvarModelo3d(id, formData);
+    await salvarFoto(id, formData);
   } catch (err) {
     if (err instanceof UploadError) return { erro: err.message };
     throw err;

@@ -21,6 +21,7 @@ type ProductData = {
   margemSugeridaPercent: number | null;
   observacoesImpressao: string | null;
   status: string;
+  fotoPath: string | null;
   attachments: { id: number; nomeArquivo: string; caminho: string }[];
 };
 
