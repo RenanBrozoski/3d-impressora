@@ -47,10 +47,18 @@ function Modelo({ url, ext, onError }: { url: string; ext: string; onError: (men
         } else if (ext === ".3mf") {
           obj = new ThreeMFLoader().parse(buffer);
         } else if (ext === ".gltf" || ext === ".glb") {
-          const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
-            new GLTFLoader().parse(buffer, "", resolve, reject);
-          });
-          obj = gltf.scene;
+          try {
+            const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
+              new GLTFLoader().parse(buffer, "", resolve, reject);
+            });
+            obj = gltf.scene;
+          } catch {
+            throw new Error(
+              ext === ".gltf"
+                ? 'Esse .gltf faz referência a arquivos externos (.bin e/ou texturas) que não foram enviados junto. Exporte como ".glb" (glTF binário) em vez de ".gltf" — ele empacota tudo num arquivo só.'
+                : "Não foi possível interpretar esse arquivo .glb.",
+            );
+          }
         } else if (ext === ".fbx") {
           obj = new FBXLoader().parse(buffer, "");
         } else if (ext === ".ply") {
