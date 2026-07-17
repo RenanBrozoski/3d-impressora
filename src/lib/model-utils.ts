@@ -1,4 +1,4 @@
-const EXTENSOES_VISUALIZAVEIS = [".stl", ".obj", ".3mf"];
+const EXTENSOES_VISUALIZAVEIS = [".stl", ".obj", ".3mf", ".gltf", ".glb", ".fbx", ".ply", ".dae"];
 
 export function extensaoArquivo(nomeArquivo: string) {
   const i = nomeArquivo.lastIndexOf(".");

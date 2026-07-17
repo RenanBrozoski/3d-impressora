@@ -145,7 +145,7 @@ export function ProductForm({
       <input type="hidden" name="removerModelo3d" value={removerModelo ? "1" : ""} />
       <div className="mb-4">
         <Label htmlFor="modelo3d">{modeloExistente ? "Substituir modelo 3D" : "Anexar modelo 3D"}</Label>
-        <Input id="modelo3d" name="modelo3d" type="file" accept=".stl,.obj,.3mf" />
+        <Input id="modelo3d" name="modelo3d" type="file" accept=".stl,.obj,.3mf,.gltf,.glb,.fbx,.ply,.dae" />
       </div>
 
       <SectionLabel>Calculadora de custo e preço sugerido</SectionLabel>

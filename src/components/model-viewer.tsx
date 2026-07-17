@@ -7,6 +7,10 @@ import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { ThreeMFLoader } from "three/examples/jsm/loaders/3MFLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
+import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader.js";
+import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader.js";
 import { extensaoArquivo, isModelo3DVisualizavel } from "@/lib/model-utils";
 
 export { isModelo3DVisualizavel };
@@ -42,6 +46,28 @@ function Modelo({ url, ext, onError }: { url: string; ext: string; onError: (men
           });
         } else if (ext === ".3mf") {
           obj = new ThreeMFLoader().parse(buffer);
+        } else if (ext === ".gltf" || ext === ".glb") {
+          const gltf = await new Promise<{ scene: THREE.Group }>((resolve, reject) => {
+            new GLTFLoader().parse(buffer, "", resolve, reject);
+          });
+          obj = gltf.scene;
+        } else if (ext === ".fbx") {
+          obj = new FBXLoader().parse(buffer, "");
+        } else if (ext === ".ply") {
+          const geometria = new PLYLoader().parse(buffer);
+          geometria.computeVertexNormals();
+          const temCor = !!geometria.getAttribute("color");
+          obj = new THREE.Mesh(
+            geometria,
+            temCor
+              ? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1 })
+              : new THREE.MeshStandardMaterial({ color: "#a78bfa", roughness: 0.55, metalness: 0.1 }),
+          );
+        } else if (ext === ".dae") {
+          const texto = new TextDecoder().decode(buffer);
+          const collada = new ColladaLoader().parse(texto, "");
+          if (!collada) throw new Error("Não foi possível interpretar o arquivo Collada.");
+          obj = collada.scene;
         } else {
           throw new Error("Formato não suportado pro visualizador.");
         }

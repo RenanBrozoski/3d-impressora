@@ -2,7 +2,22 @@ import "server-only";
 import { put } from "@vercel/blob";
 
 const MAX_SIZE_BYTES = 50 * 1024 * 1024;
-const ALLOWED_EXTENSIONS = [".stl", ".obj", ".3mf", ".gcode", ".png", ".jpg", ".jpeg", ".webp", ".pdf"];
+const ALLOWED_EXTENSIONS = [
+  ".stl",
+  ".obj",
+  ".3mf",
+  ".gltf",
+  ".glb",
+  ".fbx",
+  ".ply",
+  ".dae",
+  ".gcode",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".pdf",
+];
 
 export class UploadError extends Error {}
 
