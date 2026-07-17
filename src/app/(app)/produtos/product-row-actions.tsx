@@ -21,6 +21,7 @@ type ProductData = {
   margemSugeridaPercent: number | null;
   observacoesImpressao: string | null;
   status: string;
+  attachments: { id: number; nomeArquivo: string; caminho: string }[];
 };
 
 export function ProductRowActions({ product, refs }: { product: ProductData; refs: ItemEditorRefs }) {

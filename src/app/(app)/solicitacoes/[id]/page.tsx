@@ -4,6 +4,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { CLIENT_REQUEST_STATUS_COLOR, CLIENT_REQUEST_STATUS_LABEL } from "@/lib/status";
 import { RequestActions } from "./request-actions";
+import { AttachmentGrid } from "@/components/attachment-grid";
 
 export default async function SolicitacaoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,22 +46,7 @@ export default async function SolicitacaoDetailPage({ params }: { params: Promis
       </div>
 
       <h2 className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white">Anexos</h2>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {request.attachments.map((a) => (
-          <a
-            key={a.id}
-            href={`/api/uploads/${encodeURIComponent(a.caminho)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="card p-3 text-center text-sm text-neutral-700 dark:text-neutral-300"
-          >
-            {a.nomeArquivo}
-          </a>
-        ))}
-        {request.attachments.length === 0 && (
-          <p className="col-span-full text-sm text-neutral-500 dark:text-neutral-400">Nenhum arquivo anexado.</p>
-        )}
-      </div>
+      <AttachmentGrid attachments={request.attachments} />
     </div>
   );
 }

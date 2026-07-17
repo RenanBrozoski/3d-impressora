@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea, Select, FieldError, Hint } from "@/components/ui/input";
 import type { ItemEditorRefs } from "@/components/item-editor/types";
+import { ModelViewer, isModelo3DVisualizavel } from "@/components/model-viewer";
 
 type ProductData = {
   id: number;
@@ -22,6 +23,7 @@ type ProductData = {
   margemSugeridaPercent: number | null;
   observacoesImpressao: string | null;
   status: string;
+  attachments: { id: number; nomeArquivo: string; caminho: string }[];
 };
 
 export function ProductForm({
@@ -36,6 +38,9 @@ export function ProductForm({
   const action = product ? updateProduct : createProduct;
   const [state, formAction, pending] = useActionState(action, undefined);
   const [materialRecomendado, setMaterialRecomendado] = useState(product?.materialRecomendado ?? "");
+  const modeloExistente = product?.attachments.find((a) => isModelo3DVisualizavel(a.nomeArquivo));
+  const [removerModelo, setRemoverModelo] = useState(false);
+  const [mostrarViewer, setMostrarViewer] = useState(false);
 
   const [calc, setCalc] = useState<CalculadoraInput>({
     quantidade: 1,
@@ -107,6 +112,40 @@ export function ProductForm({
       <div>
         <Label htmlFor="descricao">Descrição</Label>
         <Textarea id="descricao" name="descricao" rows={2} defaultValue={product?.descricao ?? ""} />
+      </div>
+
+      <SectionLabel>Modelo 3D</SectionLabel>
+      {modeloExistente && !removerModelo ? (
+        <div className="mb-3 card p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-sm text-neutral-700 dark:text-neutral-300">{modeloExistente.nomeArquivo}</p>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setMostrarViewer((v) => !v)}>
+                {mostrarViewer ? "Ocultar" : "Visualizar"}
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setRemoverModelo(true)}>
+                Remover
+              </Button>
+            </div>
+          </div>
+          {mostrarViewer && (
+            <ModelViewer
+              url={`/api/uploads/${encodeURIComponent(modeloExistente.caminho)}`}
+              nomeArquivo={modeloExistente.nomeArquivo}
+              height={260}
+              className="mt-3"
+            />
+          )}
+        </div>
+      ) : (
+        <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+          {removerModelo ? "O modelo será removido ao salvar." : "Nenhum modelo 3D anexado ainda."}
+        </p>
+      )}
+      <input type="hidden" name="removerModelo3d" value={removerModelo ? "1" : ""} />
+      <div className="mb-4">
+        <Label htmlFor="modelo3d">{modeloExistente ? "Substituir modelo 3D" : "Anexar modelo 3D"}</Label>
+        <Input id="modelo3d" name="modelo3d" type="file" accept=".stl,.obj,.3mf" />
       </div>
 
       <SectionLabel>Calculadora de custo e preço sugerido</SectionLabel>

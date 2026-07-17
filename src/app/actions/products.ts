@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
 import { ProductSchema } from "@/lib/validations/product";
+import { saveUploadedFile, UploadError } from "@/lib/upload";
 
 export type ActionState = { erro?: string; ok?: boolean } | undefined;
 
@@ -28,6 +29,22 @@ function parseProductForm(formData: FormData) {
   });
 }
 
+async function salvarModelo3d(productId: number, formData: FormData) {
+  const removerModelo = formValue(formData, "removerModelo3d") === "1";
+  const arquivo = formData.get("modelo3d");
+  const temArquivoNovo = arquivo instanceof File && arquivo.size > 0;
+
+  if (!removerModelo && !temArquivoNovo) return;
+
+  // Só existe um modelo 3D por produto — remover/substituir apaga o anexo anterior.
+  await db.attachment.deleteMany({ where: { productId } });
+
+  if (temArquivoNovo) {
+    const salvo = await saveUploadedFile(arquivo as File);
+    await db.attachment.create({ data: { ...salvo, productId } });
+  }
+}
+
 export async function createProduct(_state: ActionState, formData: FormData): Promise<ActionState> {
   await getCurrentUser();
   const parsed = parseProductForm(formData);
@@ -36,7 +53,15 @@ export async function createProduct(_state: ActionState, formData: FormData): Pr
     return { erro: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
 
-  await db.product.create({ data: parsed.data });
+  const product = await db.product.create({ data: parsed.data });
+
+  try {
+    await salvarModelo3d(product.id, formData);
+  } catch (err) {
+    if (err instanceof UploadError) return { erro: err.message };
+    throw err;
+  }
+
   revalidatePath("/produtos");
   return { ok: true };
 }
@@ -52,6 +77,14 @@ export async function updateProduct(_state: ActionState, formData: FormData): Pr
   }
 
   await db.product.update({ where: { id }, data: parsed.data });
+
+  try {
+    await salvarModelo3d(id, formData);
+  } catch (err) {
+    if (err instanceof UploadError) return { erro: err.message };
+    throw err;
+  }
+
   revalidatePath("/produtos");
   return { ok: true };
 }

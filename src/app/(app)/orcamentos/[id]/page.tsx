@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { QUOTE_STATUS_COLOR, QUOTE_STATUS_LABEL } from "@/lib/status";
 import { QuoteStatusActions } from "./quote-status-actions";
 import { PrintButton } from "@/components/print-button";
+import { AttachmentGrid } from "@/components/attachment-grid";
 
 export default async function OrcamentoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -71,19 +72,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
           <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
             Anexos da solicitação original do cliente
           </p>
-          <div className="flex flex-wrap gap-2">
-            {quote.clientRequest.attachments.map((a) => (
-              <a
-                key={a.id}
-                href={`/api/uploads/${encodeURIComponent(a.caminho)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm text-neutral-700 transition hover:border-[var(--surface-border-hover)] dark:text-neutral-300"
-              >
-                {a.nomeArquivo}
-              </a>
-            ))}
-          </div>
+          <AttachmentGrid attachments={quote.clientRequest.attachments} />
         </div>
       )}
 

@@ -7,6 +7,8 @@ import { getItemEditorRefs } from "@/lib/item-refs";
 import { NovoProdutoButton } from "./novo-produto-button";
 import { ProductRowActions } from "./product-row-actions";
 import { EmptyState } from "@/components/empty-state";
+import { isModelo3DVisualizavel } from "@/lib/model-utils";
+import { Box } from "lucide-react";
 
 export default async function ProdutosPage({
   searchParams,
@@ -29,6 +31,7 @@ export default async function ProdutosPage({
         status ? { status: status as "ATIVO" | "INATIVO" } : {},
       ],
     },
+    include: { attachments: { select: { id: true, nomeArquivo: true, caminho: true } } },
     orderBy: { nome: "asc" },
   });
 
@@ -64,7 +67,12 @@ export default async function ProdutosPage({
           >
             <div className="mb-2 flex items-start justify-between gap-2">
               <div>
-                <p className="font-medium text-neutral-900 dark:text-white">{product.nome}</p>
+                <p className="flex items-center gap-1.5 font-medium text-neutral-900 dark:text-white">
+                  {product.nome}
+                  {product.attachments.some((a) => isModelo3DVisualizavel(a.nomeArquivo)) && (
+                    <Box size={14} className="text-[var(--accent)]" aria-label="Tem modelo 3D anexado" />
+                  )}
+                </p>
                 {product.categoria && (
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">{product.categoria}</p>
                 )}
