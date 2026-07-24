@@ -1,9 +1,13 @@
-"use client";
+import { FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export function PrintButton() {
+export function PrintButton({ tipo, id }: { tipo: "pedidos" | "orcamentos"; id: number }) {
   return (
-    <button onClick={() => window.print()} className="mt-4 text-sm text-neutral-500 underline print:hidden">
-      Imprimir / gerar PDF
-    </button>
+    <a href={`/api/pdf/${tipo}/${id}`} target="_blank" rel="noopener noreferrer" className="print:hidden">
+      <Button variant="outline">
+        <FileText size={16} />
+        Gerar PDF
+      </Button>
+    </a>
   );
 }

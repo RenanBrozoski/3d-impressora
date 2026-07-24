@@ -199,7 +199,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
         </table>
       </div>
 
-      <PrintButton />
+      <PrintButton tipo="pedidos" id={order.id} />
     </div>
   );
 }

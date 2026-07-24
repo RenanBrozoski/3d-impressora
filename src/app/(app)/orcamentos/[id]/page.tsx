@@ -136,7 +136,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
         </table>
       </div>
 
-      <PrintButton />
+      <PrintButton tipo="orcamentos" id={quote.id} />
     </div>
   );
 }
