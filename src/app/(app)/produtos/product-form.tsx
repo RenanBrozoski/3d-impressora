@@ -6,7 +6,7 @@ import { createProduct, updateProduct } from "@/app/actions/products";
 import { calcular, type CalculadoraInput } from "@/lib/calculadora";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea, Select, FieldError, Hint } from "@/components/ui/input";
+import { Input, Label, Textarea, Select, FieldError, Hint, NumberInput } from "@/components/ui/input";
 import type { ItemEditorRefs } from "@/components/item-editor/types";
 import { ModelViewer, isModelo3DVisualizavel } from "@/components/model-viewer";
 
@@ -172,6 +172,14 @@ export function ProductForm({
               <Button type="button" variant="ghost" size="sm" onClick={() => setMostrarViewer((v) => !v)}>
                 {mostrarViewer ? "Ocultar" : "Visualizar"}
               </Button>
+              <a
+                href={`/api/uploads/${encodeURIComponent(modeloExistente.caminho)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-8 items-center rounded-md px-3 text-sm text-neutral-600 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] dark:text-neutral-300"
+              >
+                Baixar
+              </a>
               <Button type="button" variant="ghost" size="sm" onClick={() => setRemoverModelo(true)}>
                 Remover
               </Button>
@@ -356,7 +364,6 @@ function NumField({
   label,
   value,
   onChange,
-  step = 1,
   hint,
   name,
 }: {
@@ -373,14 +380,7 @@ function NumField({
         {label}
         {hint && <Hint text={hint} />}
       </Label>
-      <Input
-        type="number"
-        name={name}
-        step={step}
-        min={0}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-      />
+      <NumberInput name={name} value={value} onChange={onChange} />
     </div>
   );
 }

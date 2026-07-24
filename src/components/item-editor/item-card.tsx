@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { calcular } from "@/lib/calculadora";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea, Select, Hint } from "@/components/ui/input";
+import { Input, Label, Textarea, Select, Hint, NumberInput } from "@/components/ui/input";
 import type { ItemDraft, ItemEditorRefs, ItemMaterialExtraDraft } from "./types";
 
 export function ItemCard({
@@ -378,7 +378,6 @@ function NumField({
   label,
   value,
   onChange,
-  step = 1,
   hint,
 }: {
   label: string;
@@ -393,13 +392,7 @@ function NumField({
         {label}
         {hint && <Hint text={hint} />}
       </Label>
-      <Input
-        type="number"
-        step={step}
-        min={0}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-      />
+      <NumberInput value={value} onChange={onChange} />
     </div>
   );
 }
