@@ -114,5 +114,6 @@ export async function deleteInventoryItem(id: number): Promise<ActionState> {
   await db.inventoryItem.delete({ where: { id } });
   revalidatePath("/estoque");
   revalidatePath("/estoque/filamentos");
+  revalidatePath(`/estoque/${id}`);
   return { ok: true };
 }

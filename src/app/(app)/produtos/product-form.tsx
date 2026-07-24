@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useActionState, useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { upload } from "@vercel/blob/client";
 import { createProduct, updateProduct } from "@/app/actions/products";
 import { calcular, type CalculadoraInput } from "@/lib/calculadora";
@@ -197,7 +198,7 @@ export function ProductForm({
           disabled={enviandoFoto}
           onChange={onFotoChange}
         />
-        {enviandoFoto && <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Enviando foto...</p>}
+        {enviandoFoto && <UploadingBadge texto="Enviando foto..." />}
         <FieldError message={erroFoto ?? undefined} />
       </div>
 
@@ -254,7 +255,7 @@ export function ProductForm({
           disabled={enviandoModelo}
           onChange={onModeloChange}
         />
-        {enviandoModelo && <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Enviando modelo...</p>}
+        {enviandoModelo && <UploadingBadge texto="Enviando modelo 3D..." />}
         {modeloNovo && !enviandoModelo && (
           <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{modeloNovo.nome} pronto pra salvar.</p>
         )}
@@ -407,9 +408,16 @@ export function ProductForm({
 
       <FieldError message={state?.erro} />
 
+      {(enviandoFoto || enviandoModelo) && (
+        <p className="flex items-center gap-1.5 text-sm font-medium text-amber-600 dark:text-amber-400">
+          <Loader2 size={14} className="animate-spin" />
+          Aguarde o upload terminar antes de salvar.
+        </p>
+      )}
+
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Salvando..." : "Salvar"}
+        <Button type="submit" disabled={pending || enviandoFoto || enviandoModelo}>
+          {pending ? "Salvando..." : enviandoFoto || enviandoModelo ? "Aguarde o upload..." : "Salvar"}
         </Button>
       </div>
     </form>
@@ -456,6 +464,15 @@ function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="mb-1 mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-400 first:mt-0 dark:text-neutral-500">
       {children}
+    </p>
+  );
+}
+
+function UploadingBadge({ texto }: { texto: string }) {
+  return (
+    <p className="mt-2 flex items-center gap-1.5 rounded-md bg-[var(--accent)]/10 px-2.5 py-1.5 text-sm font-semibold text-[var(--accent)]">
+      <Loader2 size={14} className="animate-spin" />
+      {texto}
     </p>
   );
 }

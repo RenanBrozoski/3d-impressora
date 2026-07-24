@@ -86,5 +86,6 @@ export async function deleteCustomer(id: number): Promise<ActionState> {
 
   await db.customer.delete({ where: { id } });
   revalidatePath("/clientes");
+  revalidatePath(`/clientes/${id}`);
   return { ok: true };
 }

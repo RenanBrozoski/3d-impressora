@@ -63,6 +63,7 @@ export async function deleteClientRequest(id: number): Promise<ActionState> {
 
   await db.clientRequest.delete({ where: { id } });
   revalidatePath("/solicitacoes");
+  revalidatePath(`/solicitacoes/${id}`);
   return { ok: true };
 }
 

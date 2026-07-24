@@ -79,6 +79,7 @@ export async function deleteOrder(id: number): Promise<{ ok?: boolean; erro?: st
 
   await db.order.delete({ where: { id } });
   revalidatePath("/pedidos");
+  revalidatePath(`/pedidos/${id}`);
   return { ok: true };
 }
 

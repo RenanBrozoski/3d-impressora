@@ -93,6 +93,7 @@ export async function deleteQuote(id: number): Promise<{ ok?: boolean; erro?: st
 
   await db.quote.delete({ where: { id } });
   revalidatePath("/orcamentos");
+  revalidatePath(`/orcamentos/${id}`);
   return { ok: true };
 }
 

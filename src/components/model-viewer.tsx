@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Bounds, OrbitControls } from "@react-three/drei";
+import { Bounds, OrbitControls, useBounds } from "@react-three/drei";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -92,6 +92,21 @@ function Modelo({ url, ext, onError }: { url: string; ext: string; onError: (men
   }, [url, ext, onError]);
 
   if (!objeto) return null;
+  return <ComRefit objeto={objeto} />;
+}
+
+// O modelo chega de forma assíncrona (fetch + parse), depois que <Bounds> já
+// montou — o enquadramento automático dele não reage sozinho a esse tipo de
+// mudança, então o objeto às vezes aparece minúsculo/fora do enquadramento.
+// Forçamos um novo cálculo de fit assim que o objeto está pronto na cena.
+function ComRefit({ objeto }: { objeto: THREE.Object3D }) {
+  const bounds = useBounds();
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => bounds.refresh(objeto).clip().fit());
+    return () => cancelAnimationFrame(id);
+  }, [objeto, bounds]);
+
   return <primitive object={objeto} />;
 }
 

@@ -66,5 +66,6 @@ export async function deletePrinter(id: number): Promise<ActionState> {
 
   await db.printer.delete({ where: { id } });
   revalidatePath("/impressoras");
+  revalidatePath(`/impressoras/${id}`);
   return { ok: true };
 }
