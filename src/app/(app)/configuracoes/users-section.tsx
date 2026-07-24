@@ -5,6 +5,8 @@ import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
+import { DeleteButton } from "@/components/delete-button";
+import { deleteUser } from "@/app/actions/users";
 import { UserForm } from "./user-form";
 
 type UserData = {
@@ -47,6 +49,10 @@ export function UsersSection({ users }: { users: UserData[] }) {
               <Button variant="ghost" size="icon" onClick={() => setEditUser(u)} aria-label="Editar usuário">
                 <Pencil size={16} />
               </Button>
+              <DeleteButton
+                action={() => deleteUser(u.id)}
+                confirmMessage={`Excluir o usuário "${u.nome}"? Essa ação não pode ser desfeita.`}
+              />
             </div>
           </div>
         ))}

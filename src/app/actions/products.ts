@@ -132,3 +132,20 @@ export async function setProductStatus(id: number, status: "ATIVO" | "INATIVO") 
   await db.product.update({ where: { id }, data: { status } });
   revalidatePath("/produtos");
 }
+
+export async function deleteProduct(id: number): Promise<ActionState> {
+  await getCurrentUser();
+
+  const [orderItems, quoteItems] = await Promise.all([
+    db.orderItem.count({ where: { productId: id } }),
+    db.quoteItem.count({ where: { productId: id } }),
+  ]);
+
+  if (orderItems + quoteItems > 0) {
+    return { erro: "Não é possível excluir: esse produto já foi usado em pedidos ou orçamentos. Use Inativar." };
+  }
+
+  await db.product.delete({ where: { id } });
+  revalidatePath("/produtos");
+  return { ok: true };
+}

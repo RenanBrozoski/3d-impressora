@@ -53,6 +53,19 @@ export async function setClientRequestStatus(id: number, status: "EM_ANALISE" | 
   revalidatePath(`/solicitacoes/${id}`);
 }
 
+export async function deleteClientRequest(id: number): Promise<ActionState> {
+  await getCurrentUser();
+
+  const quote = await db.quote.findUnique({ where: { clientRequestId: id } });
+  if (quote) {
+    return { erro: "Não é possível excluir: essa solicitação já foi convertida em orçamento. Use Descartar." };
+  }
+
+  await db.clientRequest.delete({ where: { id } });
+  revalidatePath("/solicitacoes");
+  return { ok: true };
+}
+
 export async function convertRequestToQuote(id: number) {
   await getCurrentUser();
 

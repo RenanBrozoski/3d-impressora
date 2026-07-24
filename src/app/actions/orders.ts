@@ -63,6 +63,25 @@ export async function setOrderStatus(id: number, status: (typeof ORDER_STATUS_VA
   revalidatePath("/pedidos");
 }
 
+export async function deleteOrder(id: number): Promise<{ ok?: boolean; erro?: string }> {
+  await getCurrentUser();
+
+  const [movimentos, pagamentos] = await Promise.all([
+    db.inventoryMovement.count({ where: { orderItem: { orderId: id } } }),
+    db.payment.count({ where: { orderId: id } }),
+  ]);
+
+  if (movimentos + pagamentos > 0) {
+    return {
+      erro: "Não é possível excluir: esse pedido já tem estoque baixado e/ou pagamento registrado. Use Cancelar em vez de excluir.",
+    };
+  }
+
+  await db.order.delete({ where: { id } });
+  revalidatePath("/pedidos");
+  return { ok: true };
+}
+
 export async function registerDelivery(id: number) {
   await getCurrentUser();
   await db.order.update({ where: { id }, data: { status: "ENTREGUE", dataEntrega: new Date() } });

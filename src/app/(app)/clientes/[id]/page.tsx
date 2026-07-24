@@ -8,6 +8,7 @@ import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, PAYMENT_STATUS_COLOR, PAYMENT_S
 import { setCustomerActive } from "@/app/actions/customers";
 import { EmptyState } from "@/components/empty-state";
 import { EditarClienteButton } from "./editar-cliente-button";
+import { CustomerDeleteButton } from "./customer-delete-button";
 
 export default async function ClienteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -48,6 +49,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
               {customer.ativo ? "Inativar" : "Reativar"}
             </Button>
           </form>
+          <CustomerDeleteButton id={customer.id} nome={customer.nome} />
         </div>
       </div>
 

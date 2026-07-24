@@ -55,3 +55,16 @@ export async function setPrinterStatus(id: number, status: "ATIVA" | "MANUTENCAO
   revalidatePath("/impressoras");
   revalidatePath(`/impressoras/${id}`);
 }
+
+export async function deletePrinter(id: number): Promise<ActionState> {
+  await getCurrentUser();
+
+  const producoes = await db.productionQueue.count({ where: { printerId: id } });
+  if (producoes > 0) {
+    return { erro: "Não é possível excluir: essa impressora já tem produções associadas. Use Parada/Manutenção." };
+  }
+
+  await db.printer.delete({ where: { id } });
+  revalidatePath("/impressoras");
+  return { ok: true };
+}

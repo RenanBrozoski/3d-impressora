@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Pencil, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { duplicateProduct, setProductStatus } from "@/app/actions/products";
+import { duplicateProduct, setProductStatus, deleteProduct } from "@/app/actions/products";
 import { ProductForm } from "./product-form";
+import { DeleteButton } from "@/components/delete-button";
 import type { ItemEditorRefs } from "@/components/item-editor/types";
 
 type ProductData = {
@@ -43,6 +44,10 @@ export function ProductRowActions({ product, refs }: { product: ProductData; ref
           {product.status === "ATIVO" ? "Inativar" : "Reativar"}
         </Button>
       </form>
+      <DeleteButton
+        action={() => deleteProduct(product.id)}
+        confirmMessage={`Excluir "${product.nome}"? Essa ação não pode ser desfeita.`}
+      />
 
       <Modal open={open} onClose={() => setOpen(false)} title="Editar produto" widthClassName="max-w-3xl">
         <ProductForm product={product} refs={refs} onSuccess={() => setOpen(false)} />

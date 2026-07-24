@@ -38,6 +38,26 @@ export async function createUser(_state: ActionState, formData: FormData): Promi
   return { ok: true };
 }
 
+export async function deleteUser(id: number): Promise<ActionState> {
+  const current = await requireAdmin();
+  if (current.id === id) {
+    return { erro: "Você não pode excluir seu próprio usuário." };
+  }
+
+  const [logs, producoes] = await Promise.all([
+    db.auditLog.count({ where: { userId: id } }),
+    db.productionQueue.count({ where: { assignedUserId: id } }),
+  ]);
+
+  if (logs + producoes > 0) {
+    return { erro: "Não é possível excluir: esse usuário já tem histórico de auditoria ou produção associado. Desative-o em vez de excluir." };
+  }
+
+  await db.user.delete({ where: { id } });
+  revalidatePath("/configuracoes");
+  return { ok: true };
+}
+
 export async function updateUser(id: number, _state: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
 

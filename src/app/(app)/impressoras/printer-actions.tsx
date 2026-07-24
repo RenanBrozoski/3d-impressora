@@ -5,7 +5,8 @@ import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { PrinterForm } from "./printer-form";
-import { setPrinterStatus } from "@/app/actions/printers";
+import { setPrinterStatus, deletePrinter } from "@/app/actions/printers";
+import { DeleteButton } from "@/components/delete-button";
 
 type PrinterData = {
   id: number;
@@ -38,6 +39,10 @@ export function PrinterActions({ printer }: { printer: PrinterData }) {
           Ativar
         </Button>
       )}
+      <DeleteButton
+        action={() => deletePrinter(printer.id)}
+        confirmMessage={`Excluir a impressora "${printer.nome}"? Essa ação não pode ser desfeita.`}
+      />
       <Modal open={open} onClose={() => setOpen(false)} title="Editar impressora">
         <PrinterForm printer={printer} onSuccess={() => setOpen(false)} />
       </Modal>

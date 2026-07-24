@@ -68,3 +68,23 @@ export async function setCustomerActive(id: number, ativo: boolean) {
   revalidatePath("/clientes");
   revalidatePath(`/clientes/${id}`);
 }
+
+export async function deleteCustomer(id: number): Promise<ActionState> {
+  await getCurrentUser();
+
+  const [pedidos, orcamentos, solicitacoes] = await Promise.all([
+    db.order.count({ where: { customerId: id } }),
+    db.quote.count({ where: { customerId: id } }),
+    db.clientRequest.count({ where: { customerId: id } }),
+  ]);
+
+  if (pedidos + orcamentos + solicitacoes > 0) {
+    return {
+      erro: "Não é possível excluir: esse cliente já tem pedidos, orçamentos ou solicitações associados. Use Inativar.",
+    };
+  }
+
+  await db.customer.delete({ where: { id } });
+  revalidatePath("/clientes");
+  return { ok: true };
+}

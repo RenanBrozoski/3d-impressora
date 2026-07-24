@@ -83,6 +83,19 @@ export async function setQuoteStatus(id: number, status: "ENVIADO" | "APROVADO" 
   revalidatePath("/orcamentos");
 }
 
+export async function deleteQuote(id: number): Promise<{ ok?: boolean; erro?: string }> {
+  await getCurrentUser();
+
+  const order = await db.order.findUnique({ where: { quoteId: id } });
+  if (order) {
+    return { erro: "Não é possível excluir: esse orçamento já foi convertido em pedido." };
+  }
+
+  await db.quote.delete({ where: { id } });
+  revalidatePath("/orcamentos");
+  return { ok: true };
+}
+
 export async function convertQuoteToOrder(id: number) {
   await getCurrentUser();
 

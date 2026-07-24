@@ -2,12 +2,15 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { setQuoteStatus, convertQuoteToOrder } from "@/app/actions/quotes";
+import { DeleteButton } from "@/components/delete-button";
+import { setQuoteStatus, convertQuoteToOrder, deleteQuote } from "@/app/actions/quotes";
 
-export function QuoteStatusActions({ id, status }: { id: number; status: string }) {
+export function QuoteStatusActions({ id, status, numero }: { id: number; status: string; numero: string }) {
   const [pending, startTransition] = useTransition();
   const [erro, setErro] = useState<string | undefined>();
+  const router = useRouter();
 
   function run(action: () => Promise<void>) {
     setErro(undefined);
@@ -54,6 +57,16 @@ export function QuoteStatusActions({ id, status }: { id: number; status: string 
           Converter em pedido
         </Button>
       )}
+
+      <DeleteButton
+        label="Excluir"
+        confirmMessage={`Excluir o orçamento "${numero}" permanentemente? Essa ação não pode ser desfeita.`}
+        action={async () => {
+          const result = await deleteQuote(id);
+          if (result?.ok) router.push("/orcamentos");
+          return result;
+        }}
+      />
     </div>
   );
 }

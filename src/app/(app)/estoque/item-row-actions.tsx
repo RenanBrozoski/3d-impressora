@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { DeleteButton } from "@/components/delete-button";
+import { deleteInventoryItem } from "@/app/actions/inventory";
 import { InventoryForm } from "./inventory-form";
 import { MovementModal } from "./movement-modal";
 
@@ -34,6 +36,10 @@ export function ItemRowActions({ item }: { item: InventoryItemData }) {
       <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="Editar item">
         <Pencil size={16} />
       </Button>
+      <DeleteButton
+        action={() => deleteInventoryItem(item.id)}
+        confirmMessage={`Excluir "${item.nome}"? Essa ação não pode ser desfeita.`}
+      />
       <Modal open={open} onClose={() => setOpen(false)} title="Editar item de estoque" widthClassName="max-w-2xl">
         <InventoryForm item={item} onSuccess={() => setOpen(false)} />
       </Modal>

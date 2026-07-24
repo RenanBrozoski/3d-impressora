@@ -94,3 +94,25 @@ export async function registerMovement(itemId: number, _state: ActionState, form
   revalidatePath(`/estoque/${itemId}`);
   return { ok: true };
 }
+
+export async function deleteInventoryItem(id: number): Promise<ActionState> {
+  await getCurrentUser();
+
+  const [movimentos, quoteItems, orderItems, materiaisExtras] = await Promise.all([
+    db.inventoryMovement.count({ where: { inventoryItemId: id } }),
+    db.quoteItem.count({ where: { inventoryItemId: id } }),
+    db.orderItem.count({ where: { inventoryItemId: id } }),
+    db.itemMaterial.count({ where: { inventoryItemId: id } }),
+  ]);
+
+  if (movimentos + quoteItems + orderItems + materiaisExtras > 0) {
+    return {
+      erro: "Não é possível excluir: esse insumo já tem movimentações, orçamentos ou pedidos associados. Use um ajuste de estoque para zerá-lo, se necessário.",
+    };
+  }
+
+  await db.inventoryItem.delete({ where: { id } });
+  revalidatePath("/estoque");
+  revalidatePath("/estoque/filamentos");
+  return { ok: true };
+}

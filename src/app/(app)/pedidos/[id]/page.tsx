@@ -7,6 +7,7 @@ import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, PAYMENT_STATUS_COLOR, PAYMENT_S
 import { OrderStatusSelect } from "./order-status-select";
 import { PaymentModal } from "./payment-modal";
 import { DeliveryButton } from "./delivery-button";
+import { OrderDeleteButton } from "./order-delete-button";
 import { TrackingLink } from "./tracking-link";
 import { EmptyState } from "@/components/empty-state";
 import { PrintButton } from "@/components/print-button";
@@ -54,6 +55,7 @@ export default async function PedidoDetailPage({ params }: { params: Promise<{ i
           <Badge color={PAYMENT_STATUS_COLOR[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
           <PaymentModal orderId={order.id} valorPendente={valorPendente} />
           <DeliveryButton id={order.id} disabled={order.status === "ENTREGUE" || order.status === "CANCELADO"} />
+          <OrderDeleteButton id={order.id} numero={order.numero} />
         </div>
       </div>
 

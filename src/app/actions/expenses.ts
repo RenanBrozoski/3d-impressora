@@ -28,3 +28,11 @@ export async function createExpense(_state: ActionState, formData: FormData): Pr
   revalidatePath("/dashboard");
   return { ok: true };
 }
+
+export async function deleteExpense(id: number): Promise<ActionState> {
+  await getCurrentUser();
+  await db.expense.delete({ where: { id } });
+  revalidatePath("/financeiro");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}

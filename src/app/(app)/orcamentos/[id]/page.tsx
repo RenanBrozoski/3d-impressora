@@ -36,7 +36,7 @@ export default async function OrcamentoDetailPage({ params }: { params: Promise<
         </div>
         <div className="flex items-center gap-3">
           <Badge color={QUOTE_STATUS_COLOR[quote.status]}>{QUOTE_STATUS_LABEL[quote.status]}</Badge>
-          <QuoteStatusActions id={quote.id} status={quote.status} />
+          <QuoteStatusActions id={quote.id} status={quote.status} numero={quote.numero} />
         </div>
       </div>
 
