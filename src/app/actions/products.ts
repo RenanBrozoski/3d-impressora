@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
 import { ProductSchema } from "@/lib/validations/product";
-import { saveUploadedFile, UploadError } from "@/lib/upload";
 
 export type ActionState = { erro?: string; ok?: boolean } | undefined;
 
@@ -29,10 +28,15 @@ function parseProductForm(formData: FormData) {
   });
 }
 
+// O arquivo já foi enviado direto pro Vercel Blob pelo navegador (ver
+// /api/blob-upload) — aqui só persistimos os metadados retornados, sem
+// mexer nos bytes do arquivo (evita o limite de payload de Server Actions).
 async function salvarModelo3d(productId: number, formData: FormData) {
   const removerModelo = formValue(formData, "removerModelo3d") === "1";
-  const arquivo = formData.get("modelo3d");
-  const temArquivoNovo = arquivo instanceof File && arquivo.size > 0;
+  const url = formValue(formData, "modelo3dUrl");
+  const nome = formValue(formData, "modelo3dNome");
+  const tamanho = formValue(formData, "modelo3dTamanho");
+  const temArquivoNovo = !!url && !!nome;
 
   if (!removerModelo && !temArquivoNovo) return;
 
@@ -40,24 +44,27 @@ async function salvarModelo3d(productId: number, formData: FormData) {
   await db.attachment.deleteMany({ where: { productId } });
 
   if (temArquivoNovo) {
-    const salvo = await saveUploadedFile(arquivo as File);
-    await db.attachment.create({ data: { ...salvo, productId } });
+    const ext = nome.slice(nome.lastIndexOf(".")).toLowerCase();
+    await db.attachment.create({
+      data: {
+        nomeArquivo: nome,
+        caminho: url,
+        tipo: ext.replace(".", "") || "desconhecido",
+        tamanhoBytes: Number(tamanho) || 0,
+        productId,
+      },
+    });
   }
 }
 
 async function salvarFoto(productId: number, formData: FormData) {
   const removerFoto = formValue(formData, "removerFoto") === "1";
-  const arquivo = formData.get("foto");
-  const temArquivoNovo = arquivo instanceof File && arquivo.size > 0;
+  const url = formValue(formData, "fotoUrl");
+  const temArquivoNovo = !!url;
 
   if (!removerFoto && !temArquivoNovo) return;
 
-  if (temArquivoNovo) {
-    const salvo = await saveUploadedFile(arquivo as File);
-    await db.product.update({ where: { id: productId }, data: { fotoPath: salvo.caminho } });
-  } else {
-    await db.product.update({ where: { id: productId }, data: { fotoPath: null } });
-  }
+  await db.product.update({ where: { id: productId }, data: { fotoPath: temArquivoNovo ? url : null } });
 }
 
 export async function createProduct(_state: ActionState, formData: FormData): Promise<ActionState> {
@@ -70,13 +77,8 @@ export async function createProduct(_state: ActionState, formData: FormData): Pr
 
   const product = await db.product.create({ data: parsed.data });
 
-  try {
-    await salvarModelo3d(product.id, formData);
-    await salvarFoto(product.id, formData);
-  } catch (err) {
-    if (err instanceof UploadError) return { erro: err.message };
-    throw err;
-  }
+  await salvarModelo3d(product.id, formData);
+  await salvarFoto(product.id, formData);
 
   revalidatePath("/produtos");
   return { ok: true };
@@ -94,13 +96,8 @@ export async function updateProduct(_state: ActionState, formData: FormData): Pr
 
   await db.product.update({ where: { id }, data: parsed.data });
 
-  try {
-    await salvarModelo3d(id, formData);
-    await salvarFoto(id, formData);
-  } catch (err) {
-    if (err instanceof UploadError) return { erro: err.message };
-    throw err;
-  }
+  await salvarModelo3d(id, formData);
+  await salvarFoto(id, formData);
 
   revalidatePath("/produtos");
   return { ok: true };

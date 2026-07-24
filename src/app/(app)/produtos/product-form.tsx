@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useActionState, useEffect, useState } from "react";
+import { upload } from "@vercel/blob/client";
 import { createProduct, updateProduct } from "@/app/actions/products";
 import { calcular, type CalculadoraInput } from "@/lib/calculadora";
 import { formatCurrency } from "@/lib/utils";
@@ -44,6 +45,46 @@ export function ProductForm({
   const [mostrarViewer, setMostrarViewer] = useState(false);
   const [removerFoto, setRemoverFoto] = useState(false);
   const [novaFotoPreview, setNovaFotoPreview] = useState<string | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const [erroFoto, setErroFoto] = useState<string | null>(null);
+  const [modeloNovo, setModeloNovo] = useState<{ url: string; nome: string; tamanho: number } | null>(null);
+  const [enviandoModelo, setEnviandoModelo] = useState(false);
+  const [erroModelo, setErroModelo] = useState<string | null>(null);
+
+  async function onFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setErroFoto(null);
+    setRemoverFoto(false);
+    setNovaFotoPreview(URL.createObjectURL(file));
+    setEnviandoFoto(true);
+    try {
+      const blob = await upload(file.name, file, { access: "private", handleUploadUrl: "/api/blob-upload" });
+      setFotoUrl(blob.url);
+    } catch (err) {
+      setErroFoto(err instanceof Error ? err.message : "Falha ao enviar a foto.");
+      setNovaFotoPreview(null);
+    } finally {
+      setEnviandoFoto(false);
+    }
+  }
+
+  async function onModeloChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setErroModelo(null);
+    setEnviandoModelo(true);
+    try {
+      const blob = await upload(file.name, file, { access: "private", handleUploadUrl: "/api/blob-upload" });
+      setModeloNovo({ url: blob.url, nome: file.name, tamanho: file.size });
+      setRemoverModelo(false);
+    } catch (err) {
+      setErroModelo(err instanceof Error ? err.message : "Falha ao enviar o modelo 3D.");
+    } finally {
+      setEnviandoModelo(false);
+    }
+  }
 
   const [calc, setCalc] = useState<CalculadoraInput>({
     quantidade: 1,
@@ -146,21 +187,18 @@ export function ProductForm({
         )}
       </div>
       <input type="hidden" name="removerFoto" value={removerFoto ? "1" : ""} />
+      {fotoUrl && <input type="hidden" name="fotoUrl" value={fotoUrl} />}
       <div className="mb-4">
         <Label htmlFor="foto">{product?.fotoPath ? "Substituir foto" : "Anexar foto"}</Label>
         <Input
           id="foto"
-          name="foto"
           type="file"
           accept="image/png,image/jpeg,image/webp"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              setRemoverFoto(false);
-              setNovaFotoPreview(URL.createObjectURL(file));
-            }
-          }}
+          disabled={enviandoFoto}
+          onChange={onFotoChange}
         />
+        {enviandoFoto && <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Enviando foto...</p>}
+        <FieldError message={erroFoto ?? undefined} />
       </div>
 
       <SectionLabel>Modelo 3D</SectionLabel>
@@ -200,9 +238,27 @@ export function ProductForm({
         </p>
       )}
       <input type="hidden" name="removerModelo3d" value={removerModelo ? "1" : ""} />
+      {modeloNovo && (
+        <>
+          <input type="hidden" name="modelo3dUrl" value={modeloNovo.url} />
+          <input type="hidden" name="modelo3dNome" value={modeloNovo.nome} />
+          <input type="hidden" name="modelo3dTamanho" value={modeloNovo.tamanho} />
+        </>
+      )}
       <div className="mb-4">
         <Label htmlFor="modelo3d">{modeloExistente ? "Substituir modelo 3D" : "Anexar modelo 3D"}</Label>
-        <Input id="modelo3d" name="modelo3d" type="file" accept=".stl,.obj,.3mf,.gltf,.glb,.fbx,.ply,.dae" />
+        <Input
+          id="modelo3d"
+          type="file"
+          accept=".stl,.obj,.3mf,.gltf,.glb,.fbx,.ply,.dae"
+          disabled={enviandoModelo}
+          onChange={onModeloChange}
+        />
+        {enviandoModelo && <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">Enviando modelo...</p>}
+        {modeloNovo && !enviandoModelo && (
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{modeloNovo.nome} pronto pra salvar.</p>
+        )}
+        <FieldError message={erroModelo ?? undefined} />
       </div>
 
       <SectionLabel>Calculadora de custo e preço sugerido</SectionLabel>
