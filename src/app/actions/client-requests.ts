@@ -5,11 +5,14 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
 import { ClientRequestSchema } from "@/lib/validations/client-request";
-import { saveUploadedFile, UploadError } from "@/lib/upload";
 
 export type ActionState = { erro?: string; ok?: boolean } | undefined;
 
+type ArquivoEnviado = { url: string; nome: string; tamanho: number; tipo: string };
+
 // Ação pública: qualquer visitante pode chamar, sem sessão (formulário /solicitar).
+// Os arquivos já foram enviados direto pro Vercel Blob pelo navegador (ver
+// /api/blob-upload-publico) — aqui só persistimos os metadados retornados.
 export async function createClientRequest(_state: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = ClientRequestSchema.safeParse({
     nome: formData.get("nome"),
@@ -22,24 +25,27 @@ export async function createClientRequest(_state: ActionState, formData: FormDat
     return { erro: parsed.error.issues[0]?.message ?? "Preencha os dados corretamente." };
   }
 
-  const arquivos = formData.getAll("arquivos").filter((f): f is File => f instanceof File && f.size > 0);
-
-  let uploaded: Awaited<ReturnType<typeof saveUploadedFile>>[] = [];
-  try {
-    uploaded = await Promise.all(arquivos.map(saveUploadedFile));
-  } catch (err) {
-    if (err instanceof UploadError) return { erro: err.message };
-    console.error("Falha ao enviar anexo da solicitação:", err);
-    return {
-      erro:
-        "Não foi possível enviar o arquivo agora. Você pode reenviar a solicitação sem arquivo e nos mandar por WhatsApp, ou tentar novamente em alguns minutos.",
-    };
+  let arquivos: ArquivoEnviado[] = [];
+  const arquivosRaw = formData.get("arquivosJson");
+  if (typeof arquivosRaw === "string" && arquivosRaw) {
+    try {
+      arquivos = JSON.parse(arquivosRaw);
+    } catch {
+      arquivos = [];
+    }
   }
 
   await db.clientRequest.create({
     data: {
       ...parsed.data,
-      attachments: { create: uploaded },
+      attachments: {
+        create: arquivos.map((a) => ({
+          nomeArquivo: a.nome,
+          caminho: a.url,
+          tipo: a.tipo || "desconhecido",
+          tamanhoBytes: a.tamanho,
+        })),
+      },
     },
   });
 
