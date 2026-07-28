@@ -7,7 +7,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const settings = await db.settings.findUnique({ where: { id: 1 } });
 
   return (
-    <AppShell user={user} nomeLoja={settings?.nomeLoja ?? "Impressão 3D"}>
+    <AppShell user={user} nomeLoja={settings?.nomeLoja ?? "Impressão 3D"} logoPath={settings?.logoPath}>
       {children}
     </AppShell>
   );

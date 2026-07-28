@@ -14,6 +14,9 @@ export async function updateSettings(_state: ActionState, formData: FormData): P
     nomeLoja: formData.get("nomeLoja"),
     contatoTelefone: formData.get("contatoTelefone"),
     contatoEmail: formData.get("contatoEmail"),
+    whatsapp: formData.get("whatsapp"),
+    instagramUrl: formData.get("instagramUrl"),
+    facebookUrl: formData.get("facebookUrl"),
     enderecoOrcamento: formData.get("enderecoOrcamento"),
     valorPadraoKwh: formData.get("valorPadraoKwh"),
     potenciaPadraoW: formData.get("potenciaPadraoW"),
@@ -25,7 +28,17 @@ export async function updateSettings(_state: ActionState, formData: FormData): P
 
   if (!parsed.success) return { erro: parsed.error.issues[0]?.message ?? "Dados inválidos." };
 
-  await db.settings.upsert({ where: { id: 1 }, update: parsed.data, create: { id: 1, ...parsed.data } });
+  // O logo já foi enviado direto pro Vercel Blob pelo navegador (ver
+  // /api/blob-upload) — aqui só persistimos a URL retornada.
+  const removerLogo = formData.get("removerLogo") === "1";
+  const logoUrl = formData.get("logoUrl");
+  const logoPath = removerLogo ? null : typeof logoUrl === "string" && logoUrl ? logoUrl : undefined;
+
+  await db.settings.upsert({
+    where: { id: 1 },
+    update: { ...parsed.data, ...(logoPath !== undefined ? { logoPath } : {}) },
+    create: { id: 1, ...parsed.data, logoPath: logoPath ?? null },
+  });
 
   // Nome da loja e padrões da calculadora aparecem em toda a área logada (layout
   // raiz) e em páginas públicas geradas estaticamente (/solicitar, /login) — sem

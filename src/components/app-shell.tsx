@@ -14,12 +14,17 @@ type CurrentUser = {
   papel: "ADMIN" | "OPERADOR";
 };
 
-function Logo({ nomeLoja }: { nomeLoja: string }) {
+function Logo({ nomeLoja, logoPath }: { nomeLoja: string; logoPath?: string | null }) {
   return (
     <div className="flex items-center gap-2.5 overflow-hidden">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] shadow-[0_4px_14px_-4px_var(--ring)]">
-        <Box size={16} className="text-white" strokeWidth={2.5} />
-      </div>
+      {logoPath ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src="/api/logo" alt={nomeLoja} className="h-8 w-8 shrink-0 rounded-lg object-contain" />
+      ) : (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] shadow-[0_4px_14px_-4px_var(--ring)]">
+          <Box size={16} className="text-white" strokeWidth={2.5} />
+        </div>
+      )}
       <span className="truncate font-semibold text-neutral-900 dark:text-white">{nomeLoja}</span>
     </div>
   );
@@ -28,10 +33,12 @@ function Logo({ nomeLoja }: { nomeLoja: string }) {
 export function AppShell({
   user,
   nomeLoja,
+  logoPath,
   children,
 }: {
   user: CurrentUser;
   nomeLoja: string;
+  logoPath?: string | null;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -44,7 +51,7 @@ export function AppShell({
       {/* Sidebar desktop */}
       <aside className="hidden w-64 flex-col border-r border-[var(--surface-border)] bg-[var(--surface-solid)]/70 backdrop-blur-xl md:flex">
         <div className="flex h-16 items-center border-b border-[var(--surface-border)] px-4">
-          <Logo nomeLoja={nomeLoja} />
+          <Logo nomeLoja={nomeLoja} logoPath={logoPath} />
         </div>
         <SidebarNav papel={user.papel} />
       </aside>
@@ -68,7 +75,7 @@ export function AppShell({
               className="absolute inset-y-0 left-0 flex w-64 flex-col bg-[var(--surface-solid)]"
             >
               <div className="flex h-16 items-center justify-between border-b border-[var(--surface-border)] px-4">
-                <Logo nomeLoja={nomeLoja} />
+                <Logo nomeLoja={nomeLoja} logoPath={logoPath} />
                 <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu">
                   <X size={20} />
                 </button>

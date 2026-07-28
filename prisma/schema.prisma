@@ -471,6 +471,9 @@ model Settings {
   logoPath                    String?
   contatoTelefone             String?
   contatoEmail                String?
+  whatsapp                    String?
+  instagramUrl                String?
+  facebookUrl                 String?
   enderecoOrcamento           String?
   valorPadraoKwh              Float   @default(0.95)
   potenciaPadraoW             Float   @default(200)

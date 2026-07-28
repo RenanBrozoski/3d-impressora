@@ -6,8 +6,12 @@ import { UsersSection } from "./users-section";
 
 const DEFAULT_SETTINGS = {
   nomeLoja: "Minha Impressão 3D",
+  logoPath: null,
   contatoTelefone: null,
   contatoEmail: null,
+  whatsapp: null,
+  instagramUrl: null,
+  facebookUrl: null,
   enderecoOrcamento: null,
   valorPadraoKwh: 0.95,
   potenciaPadraoW: 200,
