@@ -1,0 +1,19 @@
+-- AlterTable
+ALTER TABLE "products" ADD COLUMN "precoKgMaterial" DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE "products" ADD COLUMN "percentualDesperdicio" DOUBLE PRECISION;
+ALTER TABLE "products" ADD COLUMN "potenciaImpressoraW" DOUBLE PRECISION;
+ALTER TABLE "products" ADD COLUMN "valorKwh" DOUBLE PRECISION;
+ALTER TABLE "products" ADD COLUMN "custoHoraMaquina" DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE "products" ADD COLUMN "tempoMaoObraH" DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE "products" ADD COLUMN "valorHoraMaoObra" DOUBLE PRECISION;
+ALTER TABLE "products" ADD COLUMN "custoAcabamento" DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE "products" ADD COLUMN "custoEmbalagem" DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE "products" ADD COLUMN "outrosCustos" DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE "products" ADD COLUMN "taxaMinima" DOUBLE PRECISION;
+ALTER TABLE "products" ADD COLUMN "desconto" DOUBLE PRECISION DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "item_materials" ADD COLUMN "productId" INTEGER;
+
+-- AddForeignKey
+ALTER TABLE "item_materials" ADD CONSTRAINT "item_materials_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -31,7 +31,10 @@ export default async function ProdutosPage({
         status ? { status: status as "ATIVO" | "INATIVO" } : {},
       ],
     },
-    include: { attachments: { select: { id: true, nomeArquivo: true, caminho: true } } },
+    include: {
+      attachments: { select: { id: true, nomeArquivo: true, caminho: true } },
+      materiaisExtras: { select: { id: true, inventoryItemId: true, pesoG: true } },
+    },
     orderBy: { nome: "asc" },
   });
 

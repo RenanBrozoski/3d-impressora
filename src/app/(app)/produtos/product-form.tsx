@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useActionState, useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { upload } from "@vercel/blob/client";
 import { createProduct, updateProduct } from "@/app/actions/products";
 import { calcular, type CalculadoraInput } from "@/lib/calculadora";
@@ -26,17 +26,36 @@ type ProductData = {
   observacoesImpressao: string | null;
   status: string;
   fotoPath: string | null;
+  precoKgMaterial: number | null;
+  percentualDesperdicio: number | null;
+  potenciaImpressoraW: number | null;
+  valorKwh: number | null;
+  custoHoraMaquina: number | null;
+  tempoMaoObraH: number | null;
+  valorHoraMaoObra: number | null;
+  custoAcabamento: number | null;
+  custoEmbalagem: number | null;
+  outrosCustos: number | null;
+  taxaMinima: number | null;
+  desconto: number | null;
   attachments: { id: number; nomeArquivo: string; caminho: string }[];
+  materiaisExtras: { id: number; inventoryItemId: number; pesoG: number }[];
 };
+
+type ExtraDraft = { clientId: string; inventoryItemId: number | null; pesoG: number };
 
 export function ProductForm({
   product,
   refs,
   onSuccess,
+  onCancel,
+  readOnly = false,
 }: {
   product?: ProductData;
   refs: ItemEditorRefs;
   onSuccess: () => void;
+  onCancel?: () => void;
+  readOnly?: boolean;
 }) {
   const action = product ? updateProduct : createProduct;
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -90,26 +109,49 @@ export function ProductForm({
   const [calc, setCalc] = useState<CalculadoraInput>({
     quantidade: 1,
     pesoUnidadeG: product?.pesoMedioG ?? 0,
-    precoKgMaterial: 0,
-    percentualDesperdicio: refs.settings.percentualDesperdicioPadrao,
+    precoKgMaterial: product?.precoKgMaterial ?? 0,
+    percentualDesperdicio: product?.percentualDesperdicio ?? refs.settings.percentualDesperdicioPadrao,
     tempoImpressaoH: product?.tempoMedioH ?? 0,
-    potenciaImpressoraW: refs.settings.potenciaPadraoW,
-    valorKwh: refs.settings.valorPadraoKwh,
-    custoHoraMaquina: 0,
-    tempoMaoObraH: 0,
-    valorHoraMaoObra: refs.settings.valorHoraPadraoMaoDeObra,
-    custoAcabamento: 0,
-    custoEmbalagem: 0,
-    outrosCustos: 0,
-    taxaMinima: refs.settings.taxaMinimaPedido,
+    potenciaImpressoraW: product?.potenciaImpressoraW ?? refs.settings.potenciaPadraoW,
+    valorKwh: product?.valorKwh ?? refs.settings.valorPadraoKwh,
+    custoHoraMaquina: product?.custoHoraMaquina ?? 0,
+    tempoMaoObraH: product?.tempoMaoObraH ?? 0,
+    valorHoraMaoObra: product?.valorHoraMaoObra ?? refs.settings.valorHoraPadraoMaoDeObra,
+    custoAcabamento: product?.custoAcabamento ?? 0,
+    custoEmbalagem: product?.custoEmbalagem ?? 0,
+    outrosCustos: product?.outrosCustos ?? 0,
+    taxaMinima: product?.taxaMinima ?? refs.settings.taxaMinimaPedido,
     margemLucroPercent: product?.margemSugeridaPercent ?? refs.settings.margemLucroPadraoPercent,
-    desconto: 0,
+    desconto: product?.desconto ?? 0,
   });
+  const [extras, setExtras] = useState<ExtraDraft[]>(
+    product?.materiaisExtras.map((m) => ({ clientId: `extra-${m.id}`, inventoryItemId: m.inventoryItemId, pesoG: m.pesoG })) ?? [],
+  );
 
-  const resultado = calcular(calc);
+  const resultado = calcular({
+    ...calc,
+    materiaisExtras: extras
+      .filter((e) => e.inventoryItemId != null)
+      .map((e) => ({
+        pesoG: e.pesoG,
+        precoKg: refs.insumos.find((i) => i.id === e.inventoryItemId)?.precoPorUnidade ?? 0,
+      })),
+  });
 
   function setCalcField(patch: Partial<CalculadoraInput>) {
     setCalc((c) => ({ ...c, ...patch }));
+  }
+
+  function addExtra() {
+    setExtras((atual) => [...atual, { clientId: `extra-${Math.random().toString(36).slice(2)}`, inventoryItemId: null, pesoG: 0 }]);
+  }
+
+  function updateExtra(clientId: string, patch: Partial<ExtraDraft>) {
+    setExtras((atual) => atual.map((e) => (e.clientId === clientId ? { ...e, ...patch } : e)));
+  }
+
+  function removeExtra(clientId: string) {
+    setExtras((atual) => atual.filter((e) => e.clientId !== clientId));
   }
 
   function onInsumoChange(insumoId: string) {
@@ -142,7 +184,25 @@ export function ProductForm({
       <input type="hidden" name="precoSugerido" value={resultado.valorUnitario} />
       <input type="hidden" name="pesoMedioG" value={calc.pesoUnidadeG} />
       <input type="hidden" name="tempoMedioH" value={calc.tempoImpressaoH} />
+      <input type="hidden" name="precoKgMaterial" value={calc.precoKgMaterial} />
+      <input type="hidden" name="percentualDesperdicio" value={calc.percentualDesperdicio} />
+      <input type="hidden" name="potenciaImpressoraW" value={calc.potenciaImpressoraW} />
+      <input type="hidden" name="valorKwh" value={calc.valorKwh} />
+      <input type="hidden" name="custoHoraMaquina" value={calc.custoHoraMaquina} />
+      <input type="hidden" name="tempoMaoObraH" value={calc.tempoMaoObraH} />
+      <input type="hidden" name="valorHoraMaoObra" value={calc.valorHoraMaoObra} />
+      <input type="hidden" name="custoAcabamento" value={calc.custoAcabamento} />
+      <input type="hidden" name="custoEmbalagem" value={calc.custoEmbalagem} />
+      <input type="hidden" name="outrosCustos" value={calc.outrosCustos} />
+      <input type="hidden" name="taxaMinima" value={calc.taxaMinima} />
+      <input type="hidden" name="desconto" value={calc.desconto} />
+      <input
+        type="hidden"
+        name="extrasJson"
+        value={JSON.stringify(extras.filter((e) => e.inventoryItemId != null))}
+      />
 
+      <fieldset disabled={readOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="nome">Nome *</Label>
@@ -302,6 +362,46 @@ export function ProductForm({
         </div>
       </div>
 
+      {extras.length > 0 && (
+        <div className="mb-3 space-y-2">
+          {extras.map((extra) => (
+            <div key={extra.clientId} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+              <div>
+                <Label>Insumo adicional</Label>
+                <Select
+                  value={extra.inventoryItemId ?? ""}
+                  onChange={(e) => updateExtra(extra.clientId, { inventoryItemId: Number(e.target.value) || null })}
+                >
+                  <option value="">Selecionar...</option>
+                  {refs.insumos.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.nome}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <NumField label="Peso desse insumo (g)" value={extra.pesoG} onChange={(v) => updateExtra(extra.clientId, { pesoG: v })} />
+              <button
+                type="button"
+                onClick={() => removeExtra(extra.clientId)}
+                aria-label="Remover insumo adicional"
+                className="mt-6 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={addExtra}
+        className="mb-3 flex items-center gap-1.5 text-sm text-[var(--accent)] hover:underline"
+      >
+        <Plus size={14} />
+        Adicionar insumo (impressão colorida/multimaterial)
+      </button>
+
       <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div>
           <Label>Impressora usada</Label>
@@ -405,10 +505,11 @@ export function ProductForm({
           <option value="INATIVO">Inativo</option>
         </Select>
       </div>
+      </fieldset>
 
       <FieldError message={state?.erro} />
 
-      {(enviandoFoto || enviandoModelo) && (
+      {!readOnly && (enviandoFoto || enviandoModelo) && (
         <p className="flex items-center gap-1.5 text-sm font-medium text-amber-600 dark:text-amber-400">
           <Loader2 size={14} className="animate-spin" />
           Aguarde o upload terminar antes de salvar.
@@ -416,9 +517,16 @@ export function ProductForm({
       )}
 
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="submit" disabled={pending || enviandoFoto || enviandoModelo}>
-          {pending ? "Salvando..." : enviandoFoto || enviandoModelo ? "Aguarde o upload..." : "Salvar"}
-        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            {readOnly ? "Fechar" : "Cancelar"}
+          </Button>
+        )}
+        {!readOnly && (
+          <Button type="submit" disabled={pending || enviandoFoto || enviandoModelo}>
+            {pending ? "Salvando..." : enviandoFoto || enviandoModelo ? "Aguarde o upload..." : "Salvar"}
+          </Button>
+        )}
       </div>
     </form>
   );

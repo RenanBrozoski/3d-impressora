@@ -17,7 +17,7 @@ export function NovoProdutoButton({ refs }: { refs: ItemEditorRefs }) {
         Novo produto
       </Button>
       <Modal open={open} onClose={() => setOpen(false)} title="Novo produto" widthClassName="max-w-3xl">
-        <ProductForm refs={refs} onSuccess={() => setOpen(false)} />
+        <ProductForm refs={refs} onSuccess={() => setOpen(false)} onCancel={() => setOpen(false)} />
       </Modal>
     </>
   );

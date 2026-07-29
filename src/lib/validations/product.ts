@@ -17,6 +17,18 @@ export const ProductSchema = z.object({
   margemSugeridaPercent: optionalNumber,
   observacoesImpressao: z.string().trim().optional(),
   status: z.enum(["ATIVO", "INATIVO"]).default("ATIVO"),
+  precoKgMaterial: optionalNumber,
+  percentualDesperdicio: optionalNumber,
+  potenciaImpressoraW: optionalNumber,
+  valorKwh: optionalNumber,
+  custoHoraMaquina: optionalNumber,
+  tempoMaoObraH: optionalNumber,
+  valorHoraMaoObra: optionalNumber,
+  custoAcabamento: optionalNumber,
+  custoEmbalagem: optionalNumber,
+  outrosCustos: optionalNumber,
+  taxaMinima: optionalNumber,
+  desconto: optionalNumber,
 });
 
 export type ProductInput = z.infer<typeof ProductSchema>;

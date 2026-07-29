@@ -32,6 +32,7 @@ export type CalculadoraResultado = {
   custoEmbalagem: number;
   outrosCustos: number;
   custoTotalUnitario: number;
+  precoSugeridoUnitario: number;
   valorUnitario: number;
   valorTotal: number;
   lucroUnitario: number;
@@ -84,11 +85,15 @@ export function calcular(input: CalculadoraInput): CalculadoraResultado {
   // Margem é markup sobre o custo (o jeito que se usa no dia a dia): margem% = lucro / custo.
   // Ex.: margem 100% em cima de um custo de R$10 dá um preço de R$20 (dobro do custo).
   const margem = Math.max(input.margemLucroPercent, 0) / 100;
-  const precoSugerido = custoTotalUnitario * (1 + margem);
-  const valorUnitario = Math.max(precoSugerido - input.desconto, 0);
+  const precoSugeridoUnitario = custoTotalUnitario * (1 + margem);
 
   const quantidade = Math.max(input.quantidade, 1);
-  const valorTotal = valorUnitario * quantidade;
+  // Desconto é um valor fixo (R$) sobre o total da linha, não por unidade —
+  // aplicar por unidade e multiplicar pela quantidade fazia o desconto
+  // "multiplicar" (10 unidades = desconto 10x maior do que o informado).
+  const valorTotalBruto = precoSugeridoUnitario * quantidade;
+  const valorTotal = Math.max(valorTotalBruto - input.desconto, 0);
+  const valorUnitario = valorTotal / quantidade;
   const custoTotalGeral = custoTotalUnitario * quantidade;
   const lucroUnitario = valorUnitario - custoTotalUnitario;
   const lucroTotal = valorTotal - custoTotalGeral;
@@ -103,6 +108,7 @@ export function calcular(input: CalculadoraInput): CalculadoraResultado {
     custoEmbalagem: round(input.custoEmbalagem),
     outrosCustos: round(input.outrosCustos),
     custoTotalUnitario: round(custoTotalUnitario),
+    precoSugeridoUnitario: round(precoSugeridoUnitario),
     valorUnitario: round(valorUnitario),
     valorTotal: round(valorTotal),
     lucroUnitario: round(lucroUnitario),

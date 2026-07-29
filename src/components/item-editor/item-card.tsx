@@ -104,6 +104,17 @@ export function ItemCard({
     setCalc({ valorHoraMaoObra: user.valorHora ?? item.calc.valorHoraMaoObra });
   }
 
+  const quantidade = Math.max(item.quantidade, 1);
+  const valorTotalBruto = resultado.precoSugeridoUnitario * quantidade;
+
+  function onValorUnitarioManual(novoValorUnitario: number) {
+    setCalc({ desconto: round2(valorTotalBruto - novoValorUnitario * quantidade) });
+  }
+
+  function onValorTotalManual(novoValorTotal: number) {
+    setCalc({ desconto: round2(valorTotalBruto - novoValorTotal) });
+  }
+
   return (
     <div className="card p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -365,13 +376,30 @@ export function ItemCard({
 
       <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-[var(--surface-border)] bg-gradient-to-br from-[var(--accent)]/8 to-[var(--accent-2)]/8 p-3 text-sm sm:grid-cols-5">
         <Result label="Custo unitário" value={resultado.custoTotalUnitario} />
-        <Result label="Valor unitário" value={resultado.valorUnitario} highlight />
-        <Result label="Valor total" value={resultado.valorTotal} highlight />
+        <EditableResult label="Valor unitário" value={resultado.valorUnitario} onChange={onValorUnitarioManual} />
+        <EditableResult label="Valor total" value={resultado.valorTotal} onChange={onValorTotalManual} />
         <Result label="Lucro total" value={resultado.lucroTotal} />
-        <Result label={`Margem real: ${resultado.margemRealPercent.toFixed(1)}%`} value={null} />
+        <div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Margem real: {resultado.margemRealPercent.toFixed(1)}%
+          </p>
+          {item.calc.desconto !== 0 && (
+            <button
+              type="button"
+              onClick={() => setCalc({ desconto: 0 })}
+              className="text-xs text-[var(--accent)] hover:underline"
+            >
+              Voltar ao preço calculado
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+function round2(value: number) {
+  return Math.round(value * 100) / 100;
 }
 
 function NumField({
@@ -414,6 +442,27 @@ function Result({ label, value, highlight }: { label: string; value: number | nu
           {formatCurrency(value)}
         </p>
       )}
+    </div>
+  );
+}
+
+function EditableResult({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div>
+      <Label className="text-xs text-neutral-500 dark:text-neutral-400">{label}</Label>
+      <NumberInput
+        value={value}
+        onChange={onChange}
+        className="!bg-transparent !border-0 !p-0 !h-auto font-semibold text-neutral-900 dark:text-white"
+      />
     </div>
   );
 }

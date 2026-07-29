@@ -25,7 +25,43 @@ function parseProductForm(formData: FormData) {
     margemSugeridaPercent: formValue(formData, "margemSugeridaPercent"),
     observacoesImpressao: formValue(formData, "observacoesImpressao"),
     status: formValue(formData, "status") ?? "ATIVO",
+    precoKgMaterial: formValue(formData, "precoKgMaterial"),
+    percentualDesperdicio: formValue(formData, "percentualDesperdicio"),
+    potenciaImpressoraW: formValue(formData, "potenciaImpressoraW"),
+    valorKwh: formValue(formData, "valorKwh"),
+    custoHoraMaquina: formValue(formData, "custoHoraMaquina"),
+    tempoMaoObraH: formValue(formData, "tempoMaoObraH"),
+    valorHoraMaoObra: formValue(formData, "valorHoraMaoObra"),
+    custoAcabamento: formValue(formData, "custoAcabamento"),
+    custoEmbalagem: formValue(formData, "custoEmbalagem"),
+    outrosCustos: formValue(formData, "outrosCustos"),
+    taxaMinima: formValue(formData, "taxaMinima"),
+    desconto: formValue(formData, "desconto"),
   });
+}
+
+type ExtraPayload = { inventoryItemId: number; pesoG: number };
+
+function parseExtras(formData: FormData): ExtraPayload[] {
+  const raw = formValue(formData, "extrasJson");
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((e) => e && typeof e.inventoryItemId === "number" && typeof e.pesoG === "number")
+      .map((e) => ({ inventoryItemId: e.inventoryItemId, pesoG: e.pesoG }));
+  } catch {
+    return [];
+  }
+}
+
+async function salvarExtras(productId: number, formData: FormData) {
+  const extras = parseExtras(formData);
+  await db.itemMaterial.deleteMany({ where: { productId } });
+  if (extras.length > 0) {
+    await db.itemMaterial.createMany({ data: extras.map((e) => ({ ...e, productId })) });
+  }
 }
 
 // O arquivo já foi enviado direto pro Vercel Blob pelo navegador (ver
@@ -79,6 +115,7 @@ export async function createProduct(_state: ActionState, formData: FormData): Pr
 
   await salvarModelo3d(product.id, formData);
   await salvarFoto(product.id, formData);
+  await salvarExtras(product.id, formData);
 
   revalidatePath("/produtos");
   return { ok: true };
@@ -98,6 +135,7 @@ export async function updateProduct(_state: ActionState, formData: FormData): Pr
 
   await salvarModelo3d(id, formData);
   await salvarFoto(id, formData);
+  await salvarExtras(id, formData);
 
   revalidatePath("/produtos");
   return { ok: true };
@@ -105,10 +143,10 @@ export async function updateProduct(_state: ActionState, formData: FormData): Pr
 
 export async function duplicateProduct(id: number) {
   await getCurrentUser();
-  const original = await db.product.findUnique({ where: { id } });
+  const original = await db.product.findUnique({ where: { id }, include: { materiaisExtras: true } });
   if (!original) return;
 
-  await db.product.create({
+  const copia = await db.product.create({
     data: {
       nome: `${original.nome} (cópia)`,
       categoria: original.categoria,
@@ -122,8 +160,27 @@ export async function duplicateProduct(id: number) {
       margemSugeridaPercent: original.margemSugeridaPercent,
       observacoesImpressao: original.observacoesImpressao,
       status: "ATIVO",
+      precoKgMaterial: original.precoKgMaterial,
+      percentualDesperdicio: original.percentualDesperdicio,
+      potenciaImpressoraW: original.potenciaImpressoraW,
+      valorKwh: original.valorKwh,
+      custoHoraMaquina: original.custoHoraMaquina,
+      tempoMaoObraH: original.tempoMaoObraH,
+      valorHoraMaoObra: original.valorHoraMaoObra,
+      custoAcabamento: original.custoAcabamento,
+      custoEmbalagem: original.custoEmbalagem,
+      outrosCustos: original.outrosCustos,
+      taxaMinima: original.taxaMinima,
+      desconto: original.desconto,
     },
   });
+
+  if (original.materiaisExtras.length > 0) {
+    await db.itemMaterial.createMany({
+      data: original.materiaisExtras.map((m) => ({ productId: copia.id, inventoryItemId: m.inventoryItemId, pesoG: m.pesoG })),
+    });
+  }
+
   revalidatePath("/produtos");
 }
 

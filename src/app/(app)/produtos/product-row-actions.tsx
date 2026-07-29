@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Copy } from "lucide-react";
+import { Pencil, Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { duplicateProduct, setProductStatus, deleteProduct } from "@/app/actions/products";
@@ -23,14 +23,31 @@ type ProductData = {
   observacoesImpressao: string | null;
   status: string;
   fotoPath: string | null;
+  precoKgMaterial: number | null;
+  percentualDesperdicio: number | null;
+  potenciaImpressoraW: number | null;
+  valorKwh: number | null;
+  custoHoraMaquina: number | null;
+  tempoMaoObraH: number | null;
+  valorHoraMaoObra: number | null;
+  custoAcabamento: number | null;
+  custoEmbalagem: number | null;
+  outrosCustos: number | null;
+  taxaMinima: number | null;
+  desconto: number | null;
   attachments: { id: number; nomeArquivo: string; caminho: string }[];
+  materiaisExtras: { id: number; inventoryItemId: number; pesoG: number }[];
 };
 
 export function ProductRowActions({ product, refs }: { product: ProductData; refs: ItemEditorRefs }) {
   const [open, setOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
 
   return (
     <div className="flex justify-end gap-1">
+      <Button variant="ghost" size="icon" onClick={() => setViewOpen(true)} aria-label="Visualizar produto">
+        <Eye size={16} />
+      </Button>
       <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="Editar produto">
         <Pencil size={16} />
       </Button>
@@ -50,7 +67,17 @@ export function ProductRowActions({ product, refs }: { product: ProductData; ref
       />
 
       <Modal open={open} onClose={() => setOpen(false)} title="Editar produto" widthClassName="max-w-3xl">
-        <ProductForm product={product} refs={refs} onSuccess={() => setOpen(false)} />
+        <ProductForm product={product} refs={refs} onSuccess={() => setOpen(false)} onCancel={() => setOpen(false)} />
+      </Modal>
+
+      <Modal open={viewOpen} onClose={() => setViewOpen(false)} title="Visualizar produto" widthClassName="max-w-3xl">
+        <ProductForm
+          product={product}
+          refs={refs}
+          onSuccess={() => setViewOpen(false)}
+          onCancel={() => setViewOpen(false)}
+          readOnly
+        />
       </Modal>
     </div>
   );

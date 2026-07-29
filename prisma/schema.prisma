@@ -181,9 +181,25 @@ model Product {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  orderItems  OrderItem[]
-  quoteItems  QuoteItem[]
-  attachments Attachment[]
+  // Parâmetros brutos da calculadora (não só os custos finais) — sem isso,
+  // reabrir o produto pra editar zerava esses campos a cada vez.
+  precoKgMaterial       Float? @default(0)
+  percentualDesperdicio Float?
+  potenciaImpressoraW   Float?
+  valorKwh              Float?
+  custoHoraMaquina      Float? @default(0)
+  tempoMaoObraH         Float? @default(0)
+  valorHoraMaoObra      Float?
+  custoAcabamento       Float? @default(0)
+  custoEmbalagem        Float? @default(0)
+  outrosCustos          Float? @default(0)
+  taxaMinima            Float?
+  desconto              Float? @default(0)
+
+  orderItems      OrderItem[]
+  quoteItems      QuoteItem[]
+  attachments     Attachment[]
+  materiaisExtras ItemMaterial[]
 
   @@map("products")
 }
@@ -338,6 +354,8 @@ model ItemMaterial {
   quoteItem       QuoteItem?     @relation(fields: [quoteItemId], references: [id], onDelete: Cascade)
   orderItemId     Int?
   orderItem       OrderItem?     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  productId       Int?
+  product         Product?       @relation(fields: [productId], references: [id], onDelete: Cascade)
   inventoryItemId Int
   inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id])
   pesoG           Float
