@@ -72,8 +72,14 @@ export async function deleteOrder(id: number): Promise<{ ok?: boolean; erro?: st
   ]);
 
   if (movimentos + pagamentos > 0) {
+    const motivos = [
+      pagamentos > 0 ? `${pagamentos} pagamento(s)` : null,
+      movimentos > 0 ? `${movimentos} baixa(s) de estoque` : null,
+    ]
+      .filter(Boolean)
+      .join(" e ");
     return {
-      erro: "Não é possível excluir: esse pedido já tem estoque baixado e/ou pagamento registrado. Use Cancelar em vez de excluir.",
+      erro: `Não é possível excluir: esse pedido tem ${motivos} registrado(s), e isso precisa ficar preservado no histórico financeiro/estoque mesmo com o pedido cancelado.`,
     };
   }
 

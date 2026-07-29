@@ -138,6 +138,21 @@ export function ProductForm({
       })),
   });
 
+  // Custo médio e preço sugerido são campos independentes, editáveis à mão —
+  // NÃO seguem automaticamente o resultado da calculadora. Isso é de
+  // propósito: produtos cadastrados antes da calculadora ter todos os campos
+  // guardados (preço/kg, mão de obra etc.) tinham custo/preço corretos mas
+  // com os campos da calculadora zerados/incompletos — se o valor final
+  // seguisse a calculadora automaticamente, o custo/preço reais seriam
+  // substituídos por um resultado errado só de abrir a tela pra editar.
+  const [custoMedioValue, setCustoMedioValue] = useState(product?.custoMedio ?? 0);
+  const [precoSugeridoValue, setPrecoSugeridoValue] = useState(product?.precoSugerido ?? 0);
+
+  function usarValorCalculado() {
+    setCustoMedioValue(resultado.custoTotalUnitario);
+    setPrecoSugeridoValue(resultado.valorUnitario);
+  }
+
   function setCalcField(patch: Partial<CalculadoraInput>) {
     setCalc((c) => ({ ...c, ...patch }));
   }
@@ -180,8 +195,8 @@ export function ProductForm({
   return (
     <form action={formAction} className="space-y-4">
       {product && <input type="hidden" name="id" value={product.id} />}
-      <input type="hidden" name="custoMedio" value={resultado.custoTotalUnitario} />
-      <input type="hidden" name="precoSugerido" value={resultado.valorUnitario} />
+      <input type="hidden" name="custoMedio" value={custoMedioValue} />
+      <input type="hidden" name="precoSugerido" value={precoSugeridoValue} />
       <input type="hidden" name="pesoMedioG" value={calc.pesoUnidadeG} />
       <input type="hidden" name="tempoMedioH" value={calc.tempoImpressaoH} />
       <input type="hidden" name="precoKgMaterial" value={calc.precoKgMaterial} />
@@ -484,8 +499,22 @@ export function ProductForm({
           onChange={(v) => setCalcField({ margemLucroPercent: v })}
           hint="Percentual de lucro desejado sobre o custo total da peça."
         />
-        <Result label="Custo médio" value={resultado.custoTotalUnitario} />
-        <Result label="Preço sugerido" value={resultado.valorUnitario} highlight />
+      </div>
+
+      <div className="mb-4 rounded-lg border border-[var(--surface-border)] bg-gradient-to-br from-[var(--accent)]/8 to-[var(--accent-2)]/8 p-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <EditableResult label="Custo médio" value={custoMedioValue} onChange={setCustoMedioValue} />
+          <EditableResult label="Preço sugerido" value={precoSugeridoValue} onChange={setPrecoSugeridoValue} highlight />
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--surface-border)] pt-3 text-xs text-neutral-500 dark:text-neutral-400">
+          <span>
+            Resultado da calculadora acima: custo {formatCurrency(resultado.custoTotalUnitario)}, preço{" "}
+            {formatCurrency(resultado.valorUnitario)}.
+          </span>
+          <button type="button" onClick={usarValorCalculado} className="font-medium text-[var(--accent)] hover:underline">
+            Usar esse valor
+          </button>
+        </div>
       </div>
 
       <div>
@@ -557,13 +586,25 @@ function NumField({
   );
 }
 
-function Result({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+function EditableResult({
+  label,
+  value,
+  onChange,
+  highlight,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  highlight?: boolean;
+}) {
   return (
-    <div className="rounded-lg border border-[var(--surface-border)] bg-gradient-to-br from-[var(--accent)]/8 to-[var(--accent-2)]/8 px-3 py-2">
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
-      <p className={`font-semibold ${highlight ? "text-neutral-900 dark:text-white" : "text-neutral-700 dark:text-neutral-300"}`}>
-        {formatCurrency(value)}
-      </p>
+    <div>
+      <Label className="text-xs text-neutral-500 dark:text-neutral-400">{label}</Label>
+      <NumberInput
+        value={value}
+        onChange={onChange}
+        className={`font-semibold ${highlight ? "text-neutral-900 dark:text-white" : "text-neutral-700 dark:text-neutral-300"}`}
+      />
     </div>
   );
 }
