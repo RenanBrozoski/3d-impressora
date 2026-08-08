@@ -10,18 +10,23 @@ import {
   getProdutosMaisVendidos,
   getTempoMedioProducao,
 } from "@/lib/reports";
+import { resolvePeriodo, type PeriodoSearchParams } from "@/lib/period";
+import { PeriodFilter } from "@/components/period-filter";
 import { ExportCsvButton } from "@/components/export-csv-button";
 import { EmptyState } from "@/components/empty-state";
 
-export default async function RelatoriosPage() {
+export default async function RelatoriosPage({ searchParams }: { searchParams: Promise<PeriodoSearchParams> }) {
   const now = new Date();
+  const params = await searchParams;
+  const periodo = resolvePeriodo(params);
+  const intervalo = { inicio: periodo.inicio, fim: periodo.fim };
 
   const [produtos, clientes, materiais, impressoras, tempoMedio, pedidosAtrasados, estoqueBaixoRaw] = await Promise.all([
-    getProdutosMaisVendidos(10),
-    getClientesMaisRecorrentes(10),
-    getMateriaisMaisConsumidos(10),
-    getImpressorasRelatorio(),
-    getTempoMedioProducao(),
+    getProdutosMaisVendidos(10, intervalo),
+    getClientesMaisRecorrentes(10, intervalo),
+    getMateriaisMaisConsumidos(10, intervalo),
+    getImpressorasRelatorio(intervalo),
+    getTempoMedioProducao(intervalo),
     db.order.findMany({
       where: { prazoEntrega: { lt: now }, status: { notIn: ["ENTREGUE", "CANCELADO"] } },
       include: { customer: { select: { nome: true } } },
@@ -34,7 +39,12 @@ export default async function RelatoriosPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">Relatórios</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">Relatórios</h1>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Dados do período selecionado ({periodo.label}).</p>
+      </div>
+
+      <PeriodFilter basePath="/relatorios" />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="card p-4">

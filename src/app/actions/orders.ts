@@ -66,26 +66,14 @@ export async function setOrderStatus(id: number, status: (typeof ORDER_STATUS_VA
 export async function deleteOrder(id: number): Promise<{ ok?: boolean; erro?: string }> {
   await getCurrentUser();
 
-  const [movimentos, pagamentos] = await Promise.all([
-    db.inventoryMovement.count({ where: { orderItem: { orderId: id } } }),
-    db.payment.count({ where: { orderId: id } }),
-  ]);
-
-  if (movimentos + pagamentos > 0) {
-    const motivos = [
-      pagamentos > 0 ? `${pagamentos} pagamento(s)` : null,
-      movimentos > 0 ? `${movimentos} baixa(s) de estoque` : null,
-    ]
-      .filter(Boolean)
-      .join(" e ");
-    return {
-      erro: `Não é possível excluir: esse pedido tem ${motivos} registrado(s), e isso precisa ficar preservado no histórico financeiro/estoque mesmo com o pedido cancelado.`,
-    };
-  }
-
+  // Exclusão sem restrição: pagamentos e itens do pedido são apagados em
+  // cascata pelo banco; baixas de estoque (inventory_movements) ficam
+  // preservadas no histórico com orderItemId nulo.
   await db.order.delete({ where: { id } });
   revalidatePath("/pedidos");
   revalidatePath(`/pedidos/${id}`);
+  revalidatePath("/financeiro");
+  revalidatePath("/producao");
   return { ok: true };
 }
 

@@ -9,7 +9,10 @@ export default async function EditarOrcamentoPage({ params }: { params: Promise<
   const quoteId = Number(id);
 
   const [quote, refs, customers] = await Promise.all([
-    db.quote.findUnique({ where: { id: quoteId }, include: { items: { include: { materiaisExtras: true } } } }),
+    db.quote.findUnique({
+      where: { id: quoteId },
+      include: { items: { include: { materiaisExtras: true } }, customer: { select: { nome: true } } },
+    }),
     getItemEditorRefs(),
     db.customer.findMany({ where: { ativo: true }, select: { id: true, nome: true }, orderBy: { nome: "asc" } }),
   ]);
@@ -58,7 +61,7 @@ export default async function EditarOrcamentoPage({ params }: { params: Promise<
         customers={customers}
         quote={{
           id: quote.id,
-          customerId: quote.customerId,
+          customerNome: quote.customer.nome,
           validade: quote.validade ? quote.validade.toISOString().slice(0, 10) : null,
           observacoes: quote.observacoes,
           items,

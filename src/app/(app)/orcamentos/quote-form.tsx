@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createQuote, updateQuote } from "@/app/actions/quotes";
 import { calcular } from "@/lib/calculadora";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea, Select } from "@/components/ui/input";
+import { Input, Label, Textarea } from "@/components/ui/input";
 import { ItemsEditor } from "@/components/item-editor/items-editor";
 import { novoItemDraft, type ItemDraft, type ItemEditorRefs } from "@/components/item-editor/types";
 
@@ -20,14 +20,14 @@ export function QuoteForm({
   customers: CustomerOption[];
   quote?: {
     id: number;
-    customerId: number;
+    customerNome: string;
     validade: string | null;
     observacoes: string | null;
     items: ItemDraft[];
   };
 }) {
   const router = useRouter();
-  const [customerId, setCustomerId] = useState<number | "">(quote?.customerId ?? "");
+  const [customerNome, setCustomerNome] = useState(quote?.customerNome ?? "");
   const [validade, setValidade] = useState(quote?.validade ?? "");
   const [observacoes, setObservacoes] = useState(quote?.observacoes ?? "");
   const [items, setItems] = useState<ItemDraft[]>(quote?.items ?? [novoItemDraft(refs.settings)]);
@@ -38,8 +38,8 @@ export function QuoteForm({
     e.preventDefault();
     setErro(undefined);
 
-    if (!customerId) {
-      setErro("Selecione um cliente.");
+    if (!customerNome.trim()) {
+      setErro("Informe o nome do cliente.");
       return;
     }
 
@@ -87,9 +87,9 @@ export function QuoteForm({
     setPending(true);
     try {
       if (quote) {
-        await updateQuote(quote.id, { customerId: Number(customerId), validade: validade || null, observacoes, items: payloadItems });
+        await updateQuote(quote.id, { customerNome: customerNome.trim(), validade: validade || null, observacoes, items: payloadItems });
       } else {
-        await createQuote({ customerId: Number(customerId), validade: validade || null, observacoes, items: payloadItems });
+        await createQuote({ customerNome: customerNome.trim(), validade: validade || null, observacoes, items: payloadItems });
       }
     } catch (err) {
       if (err instanceof Error && err.message !== "NEXT_REDIRECT") {
@@ -105,14 +105,18 @@ export function QuoteForm({
       <div className="grid grid-cols-1 gap-4 card p-4 sm:grid-cols-3">
         <div>
           <Label>Cliente *</Label>
-          <Select value={customerId} onChange={(e) => setCustomerId(e.target.value ? Number(e.target.value) : "")} required>
-            <option value="">Selecione...</option>
+          <Input
+            list="clientes-sugeridos"
+            value={customerNome}
+            onChange={(e) => setCustomerNome(e.target.value)}
+            placeholder="Digite o nome do cliente"
+            required
+          />
+          <datalist id="clientes-sugeridos">
             {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
+              <option key={c.id} value={c.nome} />
             ))}
-          </Select>
+          </datalist>
         </div>
         <div>
           <Label>Validade</Label>

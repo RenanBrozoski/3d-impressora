@@ -8,46 +8,52 @@ function endOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
 }
 
-export async function getDashboardStats(now: Date) {
-  const inicioMes = startOfMonth(now);
-  const fimMes = endOfMonth(now);
-
-  const [pedidosMes, pedidosPendentes, pedidosEmProducao, pedidosEntregues, clientesAtivos, todosInsumos, proximasEntregas, pedidosAtrasados, expensesMes] =
-    await Promise.all([
-      db.order.findMany({ where: { dataPedido: { gte: inicioMes, lte: fimMes } }, include: { items: true } }),
-      db.order.count({ where: { status: { in: ["AGUARDANDO_APROVACAO", "APROVADO"] } } }),
-      db.order.count({ where: { status: { in: ["NA_FILA", "EM_IMPRESSAO", "EM_ACABAMENTO"] } } }),
-      db.order.count({ where: { status: "ENTREGUE", dataEntrega: { gte: inicioMes, lte: fimMes } } }),
-      db.customer.count({ where: { ativo: true } }),
-      db.inventoryItem.findMany(),
-      db.order.findMany({
-        where: { prazoEntrega: { gte: now }, status: { notIn: ["ENTREGUE", "CANCELADO"] } },
-        orderBy: { prazoEntrega: "asc" },
-        take: 5,
-        include: { customer: { select: { nome: true } } },
-      }),
-      db.order.findMany({
-        where: { prazoEntrega: { lt: now }, status: { notIn: ["ENTREGUE", "CANCELADO"] } },
-        orderBy: { prazoEntrega: "asc" },
-        include: { customer: { select: { nome: true } } },
-      }),
-      db.expense.aggregate({ _sum: { valor: true }, where: { data: { gte: inicioMes, lte: fimMes } } }),
-    ]);
+export async function getDashboardStats(inicio: Date, fim: Date) {
+  const [
+    pedidosPeriodo,
+    pedidosPendentes,
+    pedidosEmProducao,
+    pedidosEntregues,
+    clientesAtivos,
+    todosInsumos,
+    proximasEntregas,
+    pedidosAtrasados,
+    expensesPeriodo,
+  ] = await Promise.all([
+    db.order.findMany({ where: { dataPedido: { gte: inicio, lte: fim } }, include: { items: true } }),
+    db.order.count({ where: { status: { in: ["AGUARDANDO_APROVACAO", "APROVADO"] } } }),
+    db.order.count({ where: { status: { in: ["NA_FILA", "EM_IMPRESSAO", "EM_ACABAMENTO"] } } }),
+    db.order.count({ where: { status: "ENTREGUE", dataEntrega: { gte: inicio, lte: fim } } }),
+    db.customer.count({ where: { ativo: true } }),
+    db.inventoryItem.findMany(),
+    db.order.findMany({
+      where: { prazoEntrega: { gte: new Date() }, status: { notIn: ["ENTREGUE", "CANCELADO"] } },
+      orderBy: { prazoEntrega: "asc" },
+      take: 5,
+      include: { customer: { select: { nome: true } } },
+    }),
+    db.order.findMany({
+      where: { prazoEntrega: { lt: new Date() }, status: { notIn: ["ENTREGUE", "CANCELADO"] } },
+      orderBy: { prazoEntrega: "asc" },
+      include: { customer: { select: { nome: true } } },
+    }),
+    db.expense.aggregate({ _sum: { valor: true }, where: { data: { gte: inicio, lte: fim } } }),
+  ]);
 
   const estoqueBaixo = todosInsumos.filter((i) => i.quantidadeAtual <= i.quantidadeMinima);
-  const faturamentoMes = pedidosMes.reduce((sum, o) => sum + o.valorTotal, 0);
-  const lucroMes = pedidosMes.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.lucroEstimado, 0), 0);
-  const pedidosConcluidos = pedidosMes.filter((o) => o.status === "PRONTO_PARA_ENTREGA" || o.status === "ENTREGUE").length;
+  const faturamentoPeriodo = pedidosPeriodo.reduce((sum, o) => sum + o.valorTotal, 0);
+  const lucroPeriodo = pedidosPeriodo.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.lucroEstimado, 0), 0);
+  const pedidosConcluidos = pedidosPeriodo.filter((o) => o.status === "PRONTO_PARA_ENTREGA" || o.status === "ENTREGUE").length;
 
   return {
-    totalPedidosMes: pedidosMes.length,
+    totalPedidosPeriodo: pedidosPeriodo.length,
     pedidosPendentes,
     pedidosEmProducao,
     pedidosConcluidos,
     pedidosEntregues,
-    faturamentoMes,
-    lucroMes,
-    custosMes: expensesMes._sum.valor ?? 0,
+    faturamentoPeriodo,
+    lucroPeriodo,
+    custosPeriodo: expensesPeriodo._sum.valor ?? 0,
     clientesAtivos,
     estoqueBaixo,
     proximasEntregas,
@@ -83,9 +89,10 @@ export async function getPedidosPorStatus() {
   return grupos.map((g) => ({ status: g.status, quantidade: g._count._all }));
 }
 
-export async function getProdutosMaisVendidos(limit = 5) {
+export async function getProdutosMaisVendidos(limit = 5, periodo?: { inicio: Date; fim: Date }) {
   const itens = await db.orderItem.groupBy({
     by: ["nomePeca"],
+    where: periodo ? { order: { dataPedido: { gte: periodo.inicio, lte: periodo.fim } } } : undefined,
     _sum: { quantidade: true, valorTotal: true, lucroEstimado: true },
     orderBy: { _sum: { valorTotal: "desc" } },
     take: limit,
@@ -99,26 +106,36 @@ export async function getProdutosMaisVendidos(limit = 5) {
   }));
 }
 
-export async function getClientesMaisRecorrentes(limit = 5) {
-  const clientes = await db.customer.findMany({
-    include: { orders: { select: { valorTotal: true } } },
-    orderBy: { orders: { _count: "desc" } },
+export async function getClientesMaisRecorrentes(limit = 5, periodo?: { inicio: Date; fim: Date }) {
+  const grupos = await db.order.groupBy({
+    by: ["customerId"],
+    where: periodo ? { dataPedido: { gte: periodo.inicio, lte: periodo.fim } } : undefined,
+    _count: { _all: true },
+    _sum: { valorTotal: true },
+    orderBy: { _count: { customerId: "desc" } },
     take: limit,
   });
 
-  return clientes
-    .map((c) => ({
-      nome: c.nome,
-      pedidos: c.orders.length,
-      totalGasto: c.orders.reduce((s, o) => s + o.valorTotal, 0),
-    }))
-    .filter((c) => c.pedidos > 0);
+  const customers = await db.customer.findMany({
+    where: { id: { in: grupos.map((g) => g.customerId) } },
+    select: { id: true, nome: true },
+  });
+
+  return grupos.map((g) => ({
+    nome: customers.find((c) => c.id === g.customerId)?.nome ?? "Desconhecido",
+    pedidos: g._count._all,
+    totalGasto: g._sum.valorTotal ?? 0,
+  }));
 }
 
-export async function getMateriaisMaisConsumidos(limit = 5) {
+export async function getMateriaisMaisConsumidos(limit = 5, periodo?: { inicio: Date; fim: Date }) {
   const movimentos = await db.inventoryMovement.groupBy({
     by: ["inventoryItemId"],
-    where: { tipo: "SAIDA", origem: "PEDIDO" },
+    where: {
+      tipo: "SAIDA",
+      origem: "PEDIDO",
+      ...(periodo ? { createdAt: { gte: periodo.inicio, lte: periodo.fim } } : {}),
+    },
     _sum: { quantidade: true },
     orderBy: { _sum: { quantidade: "desc" } },
     take: limit,
@@ -134,9 +151,14 @@ export async function getMateriaisMaisConsumidos(limit = 5) {
   });
 }
 
-export async function getImpressorasRelatorio() {
+export async function getImpressorasRelatorio(periodo?: { inicio: Date; fim: Date }) {
   const printers = await db.printer.findMany({
-    include: { filaProducao: { include: { orderItem: { select: { tempoImpressaoH: true } } } } },
+    include: {
+      filaProducao: {
+        where: periodo ? { createdAt: { gte: periodo.inicio, lte: periodo.fim } } : undefined,
+        include: { orderItem: { select: { tempoImpressaoH: true } } },
+      },
+    },
   });
 
   return printers.map((p) => {
@@ -151,9 +173,13 @@ export async function getImpressorasRelatorio() {
   });
 }
 
-export async function getTempoMedioProducao() {
+export async function getTempoMedioProducao(periodo?: { inicio: Date; fim: Date }) {
   const finalizados = await db.productionQueue.findMany({
-    where: { status: "FINALIZADO", dataInicioReal: { not: null }, dataFimReal: { not: null } },
+    where: {
+      status: "FINALIZADO",
+      dataInicioReal: { not: null },
+      dataFimReal: periodo ? { not: null, gte: periodo.inicio, lte: periodo.fim } : { not: null },
+    },
   });
 
   if (finalizados.length === 0) return 0;

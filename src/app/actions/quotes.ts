@@ -6,13 +6,24 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
 import { QuotePayloadSchema, type QuotePayload } from "@/lib/validations/quote";
 
+// Orçamento não exige cadastro prévio de cliente: basta digitar o nome.
+// Reaproveita o cliente existente com esse nome (sem diferenciar
+// maiúsculas/minúsculas) ou cria um novo cadastro mínimo na hora.
+async function resolveCustomerId(nome: string): Promise<number> {
+  const existente = await db.customer.findFirst({ where: { nome: { equals: nome, mode: "insensitive" } } });
+  if (existente) return existente.id;
+  const criado = await db.customer.create({ data: { nome } });
+  return criado.id;
+}
+
 export async function createQuote(payload: QuotePayload) {
   await getCurrentUser();
   const parsed = QuotePayloadSchema.safeParse(payload);
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Dados inválidos.");
   }
-  const { customerId, validade, observacoes, items } = parsed.data;
+  const { customerNome, validade, observacoes, items } = parsed.data;
+  const customerId = await resolveCustomerId(customerNome);
 
   const valorSugerido = items.reduce((sum, item) => sum + item.valorTotal, 0);
 
@@ -47,7 +58,8 @@ export async function updateQuote(id: number, payload: QuotePayload) {
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Dados inválidos.");
   }
-  const { customerId, validade, observacoes, items } = parsed.data;
+  const { customerNome, validade, observacoes, items } = parsed.data;
+  const customerId = await resolveCustomerId(customerNome);
   const valorSugerido = items.reduce((sum, item) => sum + item.valorTotal, 0);
 
   await db.$transaction([

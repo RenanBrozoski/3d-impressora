@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { upload } from "@vercel/blob/client";
 import { createProduct, updateProduct } from "@/app/actions/products";
@@ -147,6 +147,21 @@ export function ProductForm({
   // substituídos por um resultado errado só de abrir a tela pra editar.
   const [custoMedioValue, setCustoMedioValue] = useState(product?.custoMedio ?? 0);
   const [precoSugeridoValue, setPrecoSugeridoValue] = useState(product?.precoSugerido ?? 0);
+
+  // Custo/preço só ficam "presos" ao valor salvo na primeira renderização (ver
+  // comentário acima). A partir daí, qualquer alteração nos campos da
+  // calculadora (peso, margem, etc.) já reflete aqui automaticamente — sem
+  // isso, mudar a margem não tinha efeito nenhum no valor final até clicar
+  // manualmente em "Usar esse valor".
+  const primeiraRenderizacao = useRef(true);
+  useEffect(() => {
+    if (primeiraRenderizacao.current) {
+      primeiraRenderizacao.current = false;
+      return;
+    }
+    setCustoMedioValue(resultado.custoTotalUnitario);
+    setPrecoSugeridoValue(resultado.valorUnitario);
+  }, [resultado.custoTotalUnitario, resultado.valorUnitario]);
 
   function usarValorCalculado() {
     setCustoMedioValue(resultado.custoTotalUnitario);

@@ -3,14 +3,19 @@ import { AlertTriangle, Clock, ClipboardList, Hourglass, Factory, CheckCircle2, 
 import { getCurrentUser } from "@/lib/dal";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getDashboardStats, getFaturamentoPorMes, getPedidosPorStatus } from "@/lib/reports";
+import { resolvePeriodo, type PeriodoSearchParams } from "@/lib/period";
 import { RevenueChart } from "@/components/charts/revenue-chart";
 import { StatusChart } from "@/components/charts/status-chart";
 import { StatCard } from "@/components/stat-card";
+import { PeriodFilter } from "@/components/period-filter";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<PeriodoSearchParams> }) {
+  const params = await searchParams;
+  const periodo = resolvePeriodo(params);
+
   const [user, stats, faturamento, statusData] = await Promise.all([
     getCurrentUser(),
-    getDashboardStats(new Date()),
+    getDashboardStats(periodo.inicio, periodo.fim),
     getFaturamentoPorMes(6),
     getPedidosPorStatus(),
   ]);
@@ -20,10 +25,12 @@ export default async function DashboardPage() {
       <h1 className="mb-1 text-2xl font-semibold text-neutral-900 dark:text-white">
         Olá, <span className="text-gradient">{user.nome.split(" ")[0]}</span>
       </h1>
-      <p className="mb-6 text-neutral-500 dark:text-neutral-400">Resumo do negócio neste mês.</p>
+      <p className="mb-4 text-neutral-500 dark:text-neutral-400">Resumo do negócio no período selecionado ({periodo.label}).</p>
+
+      <PeriodFilter basePath="/dashboard" />
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <StatCard index={0} label="Pedidos no mês" value={stats.totalPedidosMes} icon={<ClipboardList size={14} />} accent="violet" />
+        <StatCard index={0} label="Pedidos no período" value={stats.totalPedidosPeriodo} icon={<ClipboardList size={14} />} accent="violet" />
         <StatCard index={1} label="Pendentes" value={stats.pedidosPendentes} icon={<Hourglass size={14} />} accent="yellow" />
         <StatCard index={2} label="Em produção" value={stats.pedidosEmProducao} icon={<Factory size={14} />} accent="blue" />
         <StatCard index={3} label="Concluídos" value={stats.pedidosConcluidos} icon={<CheckCircle2 size={14} />} accent="green" />
@@ -33,24 +40,24 @@ export default async function DashboardPage() {
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard
           index={5}
-          label="Faturamento do mês"
-          value={formatCurrency(stats.faturamentoMes)}
+          label="Faturamento no período"
+          value={formatCurrency(stats.faturamentoPeriodo)}
           icon={<TrendingUp size={14} />}
           accent="blue"
           className="text-blue-600 dark:text-blue-400"
         />
         <StatCard
           index={6}
-          label="Lucro estimado do mês"
-          value={formatCurrency(stats.lucroMes)}
+          label="Lucro estimado no período"
+          value={formatCurrency(stats.lucroPeriodo)}
           icon={<Wallet size={14} />}
           accent="green"
           className="text-green-600 dark:text-green-400"
         />
         <StatCard
           index={7}
-          label="Custos do mês"
-          value={formatCurrency(stats.custosMes)}
+          label="Custos no período"
+          value={formatCurrency(stats.custosPeriodo)}
           icon={<Receipt size={14} />}
           accent="red"
           className="text-red-600 dark:text-red-400"
