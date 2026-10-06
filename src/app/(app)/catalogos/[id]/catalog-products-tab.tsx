@@ -2,7 +2,35 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Image as ImageIcon, ImageOff, Plus, Search, X, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Plus, Search, X, Loader2 } from "lucide-react";
+
+// Thumbnail that tries proxy URL for private blobs; falls back to initial letter
+function AdminThumb({ url, nome }: { url?: string | null; nome: string }) {
+  const [failed, setFailed] = useState(false);
+  const initial = nome.charAt(0).toUpperCase();
+
+  if (!url || failed) {
+    return (
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[var(--surface-border)] bg-neutral-100 text-sm font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+        {initial}
+      </div>
+    );
+  }
+
+  const proxyUrl = url.includes("private.blob.vercel-storage.com")
+    ? `/api/uploads/${encodeURIComponent(url)}`
+    : url;
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={proxyUrl}
+      alt=""
+      className="h-12 w-12 shrink-0 rounded-lg border border-[var(--surface-border)] object-cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 import { addItemToCatalog, removeItemFromCatalog } from "@/app/actions/catalog-items";
 import { useRouter } from "next/navigation";
 
@@ -177,7 +205,7 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
         ) : (
           <div className="flex flex-col gap-2">
             {items.map((item) => {
-              const cover = item.images[0]?.url;
+              const coverUrl = item.images[0]?.url;
               const isRemoving = removingId === item.id && isPending;
 
               return (
@@ -185,18 +213,7 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
                   key={item.id}
                   className={`flex items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-2 transition-opacity ${isRemoving ? "opacity-40" : ""}`}
                 >
-                  {cover ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={cover}
-                      alt={item.images[0]?.altText ?? item.nome}
-                      className="h-12 w-12 shrink-0 rounded-lg border border-[var(--surface-border)] object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[var(--surface-border)] bg-neutral-100 text-neutral-400 dark:bg-neutral-900 dark:text-neutral-600">
-                      <ImageOff size={18} />
-                    </div>
-                  )}
+                  <AdminThumb url={coverUrl} nome={item.nome} />
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">{item.nome}</p>

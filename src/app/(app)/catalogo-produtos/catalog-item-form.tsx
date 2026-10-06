@@ -50,6 +50,32 @@ interface CatalogItemFormProps {
   erpProducts?: ErpProduct[];
 }
 
+// ERP product thumbnail — tries the proxy URL (private blobs require auth)
+function ErpThumb({ fotoPath, nome }: { fotoPath: string | null; nome: string }) {
+  const [failed, setFailed] = useState(false);
+  const initial = nome.charAt(0).toUpperCase();
+
+  if (!fotoPath || failed) {
+    return (
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-sm font-bold text-[var(--accent)]">
+        {initial}
+      </div>
+    );
+  }
+
+  const proxyUrl = `/api/uploads/${encodeURIComponent(fotoPath)}`;
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={proxyUrl}
+      alt=""
+      className="h-10 w-10 shrink-0 rounded-lg object-cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: CatalogItemFormProps) {
   const router = useRouter();
   const isEditing = !!item;
@@ -204,21 +230,7 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
                         importFromErp(String(p.id));
                       }}
                     >
-                      {p.fotoPath ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={p.fotoPath}
-                          alt=""
-                          className="h-10 w-10 shrink-0 rounded-lg object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      ) : (
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-sm font-bold text-[var(--accent)]">
-                          {p.nome.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      <ErpThumb fotoPath={p.fotoPath} nome={p.nome} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
                           {p.nome}

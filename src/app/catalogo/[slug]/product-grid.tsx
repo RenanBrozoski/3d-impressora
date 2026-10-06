@@ -292,11 +292,11 @@ function ProductCard({
         ) : (
           <div
             className="flex h-full w-full flex-col items-center justify-center"
-            style={{ background: `${accentColor}14` }}
+            style={{ background: dark ? `${accentColor}28` : `${accentColor}14` }}
           >
             <span
-              className="text-6xl font-bold"
-              style={{ color: accentColor, opacity: 0.35 }}
+              className="select-none text-6xl font-bold"
+              style={{ color: accentColor, opacity: dark ? 0.65 : 0.4 }}
             >
               {initial}
             </span>
