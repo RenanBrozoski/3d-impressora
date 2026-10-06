@@ -687,7 +687,6 @@ function ProductMiniCard({
               lineHeight: 1.4,
               marginBottom: 6,
             }}
-            numberOfLines={3}
           >
             {product.descricao}
           </Text>
