@@ -190,12 +190,13 @@ function CatalogCoverPage({
         {/* Logo container */}
         {logoDataUri && (
           <View style={{
-            width: 88, height: 88, borderRadius: 22,
-            backgroundColor: "rgba(255,255,255,0.15)",
+            width: 90, height: 90, borderRadius: 20,
+            backgroundColor: "#ffffff",
             alignItems: "center", justifyContent: "center",
             marginBottom: 28,
+            padding: 8,
           }}>
-            <Image src={logoDataUri} style={{ width: 66, height: 66, borderRadius: 16 }} />
+            <Image src={logoDataUri} style={{ width: 74, height: 74, objectFit: "contain" }} />
           </View>
         )}
 
@@ -346,7 +347,13 @@ function PDFHeader({
     }}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         {logoDataUri && (
-          <Image src={logoDataUri} style={{ width: 18, height: 18, borderRadius: 4, marginRight: 7 }} />
+          <View style={{
+            width: 22, height: 22, borderRadius: 5, marginRight: 7,
+            backgroundColor: "#f4f4f5",
+            alignItems: "center", justifyContent: "center",
+          }}>
+            <Image src={logoDataUri} style={{ width: 16, height: 16, objectFit: "contain" }} />
+          </View>
         )}
         <Text style={{ fontSize: 8, fontWeight: 700, color: primary, letterSpacing: 0.5 }}>
           {cabecalhoTexto ?? nomeLoja ?? "Catálogo"}
@@ -676,7 +683,7 @@ function ProductMiniCard({ product, primary, secondary }: {
       )}
 
       {/* Body */}
-      <View style={{ padding: 10, flex: 1 }}>
+      <View style={{ padding: 10 }}>
         {/* Description */}
         {product.descricao && (
           <Text style={{ fontSize: 8, color: TEXT_MID, lineHeight: 1.4, marginBottom: 7 }}>
@@ -758,7 +765,7 @@ function ProductPageDouble({
       <View style={{
         flexDirection: "row", gap: 14,
         paddingTop: topPad + 14, paddingBottom: botPad + 14,
-        paddingHorizontal: 24, flex: 1,
+        paddingHorizontal: 24,
       }}>
         <ProductMiniCard product={p1} primary={primary} secondary={secondary} />
         {p2 ? (
