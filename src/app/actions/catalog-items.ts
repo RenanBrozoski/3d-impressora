@@ -37,7 +37,7 @@ export async function createCatalogItem(
 
   const parsed = CatalogItemSchema.safeParse(raw);
   if (!parsed.success) {
-    return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+    return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
   }
 
   const { catalogIds, tags, attributeValues, ...itemData } = parsed.data;
@@ -108,7 +108,7 @@ export async function updateCatalogItem(
 
   const parsed = CatalogItemSchema.safeParse(raw);
   if (!parsed.success) {
-    return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+    return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
   }
 
   const { catalogIds, tags, attributeValues, ...itemData } = parsed.data;

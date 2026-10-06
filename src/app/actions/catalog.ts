@@ -38,7 +38,7 @@ export async function createCatalog(
 
   const parsed = CatalogSchema.safeParse(raw);
   if (!parsed.success) {
-    return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+    return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
   }
 
   const exists = await db.catalog.findUnique({ where: { slug: parsed.data.slug } });
@@ -76,7 +76,7 @@ export async function updateCatalog(
 
   const parsed = CatalogSchema.safeParse(raw);
   if (!parsed.success) {
-    return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+    return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
   }
 
   const conflict = await db.catalog.findFirst({

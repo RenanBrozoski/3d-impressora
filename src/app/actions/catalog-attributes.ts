@@ -22,7 +22,7 @@ export async function createAttribute(
   };
 
   const parsed = CatalogAttributeSchema.safeParse(raw);
-  if (!parsed.success) return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+  if (!parsed.success) return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
 
   const existing = await db.catalogAttribute.findUnique({ where: { nome: parsed.data.nome } });
   if (existing) return { erro: "Já existe um atributo com este nome." };
@@ -52,7 +52,7 @@ export async function updateAttribute(
   };
 
   const parsed = CatalogAttributeSchema.safeParse(raw);
-  if (!parsed.success) return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+  if (!parsed.success) return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
 
   const conflict = await db.catalogAttribute.findFirst({
     where: { nome: parsed.data.nome, id: { not: id } },
