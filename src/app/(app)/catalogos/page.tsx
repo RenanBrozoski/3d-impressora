@@ -11,14 +11,34 @@ import { CatalogRowActions } from "./catalog-row-actions";
 export default async function CatalogosPage() {
   await getCurrentUser();
 
-  const catalogs = await db.catalog.findMany({
-    where: { deletedAt: null },
-    orderBy: { ordem: "asc" },
+  const query = {
+    where: { deletedAt: null as null },
+    orderBy: { ordem: "asc" as const },
     include: {
       theme: { select: { corPrimaria: true, imagemCapa: true } },
       _count: { select: { products: true } },
     },
-  });
+  } as const;
+
+  type CatalogRow = Awaited<ReturnType<typeof db.catalog.findMany<typeof query>>>[number];
+
+  let dbError: string | null = null;
+  let catalogs: CatalogRow[] = [];
+
+  try {
+    catalogs = await db.catalog.findMany(query);
+  } catch (e) {
+    dbError = e instanceof Error ? e.message : String(e);
+  }
+
+  if (dbError) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-900/30 dark:bg-red-900/10">
+        <h2 className="mb-2 font-semibold text-red-700 dark:text-red-400">Erro ao carregar catálogos</h2>
+        <pre className="overflow-auto text-xs text-red-600 dark:text-red-300">{dbError}</pre>
+      </div>
+    );
+  }
 
   return (
     <div>
