@@ -3,42 +3,20 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
-import { Plus, BookOpen, Eye, Pencil, Copy, ToggleLeft, ToggleRight, Trash2, ExternalLink } from "lucide-react";
-import { reorderCatalogs, toggleCatalogStatus } from "@/app/actions/catalog";
-import { SortableList } from "@/components/catalog/sortable-list";
-import { CatalogRowActions } from "./catalog-row-actions";
+import { Plus, BookOpen, ExternalLink } from "lucide-react";
+import { CatalogSortableList } from "./catalog-sortable-list";
 
 export default async function CatalogosPage() {
   await getCurrentUser();
 
-  const query = {
-    where: { deletedAt: null as null },
-    orderBy: { ordem: "asc" as const },
+  const catalogs = await db.catalog.findMany({
+    where: { deletedAt: null },
+    orderBy: { ordem: "asc" },
     include: {
       theme: { select: { corPrimaria: true, imagemCapa: true } },
       _count: { select: { products: true } },
     },
-  } as const;
-
-  type CatalogRow = Awaited<ReturnType<typeof db.catalog.findMany<typeof query>>>[number];
-
-  let dbError: string | null = null;
-  let catalogs: CatalogRow[] = [];
-
-  try {
-    catalogs = await db.catalog.findMany(query);
-  } catch (e) {
-    dbError = e instanceof Error ? e.message : String(e);
-  }
-
-  if (dbError) {
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-900/30 dark:bg-red-900/10">
-        <h2 className="mb-2 font-semibold text-red-700 dark:text-red-400">Erro ao carregar catálogos</h2>
-        <pre className="overflow-auto text-xs text-red-600 dark:text-red-300">{dbError}</pre>
-      </div>
-    );
-  }
+  });
 
   return (
     <div>
@@ -78,51 +56,7 @@ export default async function CatalogosPage() {
           <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
             Arraste para reordenar. A ordem reflete no site e nos PDFs.
           </p>
-          <SortableList
-            items={catalogs}
-            onReorder={(ids) => reorderCatalogs(ids)}
-            renderItem={(catalog) => (
-              <div className="flex items-center gap-3">
-                {/* Preview de cor */}
-                <div
-                  className="h-10 w-10 shrink-0 rounded-lg border border-[var(--surface-border)]"
-                  style={{
-                    background: catalog.theme?.imagemCapa
-                      ? `url(${catalog.theme.imagemCapa}) center/cover`
-                      : catalog.theme?.corPrimaria ?? "#7c3aed",
-                  }}
-                >
-                  {catalog.icone && !catalog.theme?.imagemCapa && (
-                    <span className="flex h-full w-full items-center justify-center text-lg">{catalog.icone}</span>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-neutral-900 dark:text-white">
-                    {catalog.nome}
-                  </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    /{catalog.slug} · {catalog._count.products} produto{catalog._count.products !== 1 ? "s" : ""}
-                  </p>
-                </div>
-
-                {/* Badge status */}
-                <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    catalog.ativo
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                      : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-                  }`}
-                >
-                  {catalog.ativo ? "Ativo" : "Inativo"}
-                </span>
-
-                {/* Ações */}
-                <CatalogRowActions catalog={catalog} />
-              </div>
-            )}
-          />
+          <CatalogSortableList catalogs={catalogs} />
         </div>
       )}
     </div>
