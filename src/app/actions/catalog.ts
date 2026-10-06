@@ -44,13 +44,16 @@ export async function createCatalog(
   const exists = await db.catalog.findUnique({ where: { slug: parsed.data.slug } });
   if (exists) return { erro: "Já existe um catálogo com este slug." };
 
-  await db.catalog.create({
-    data: {
-      ...parsed.data,
-      theme: { create: {} },
-      pdfTheme: { create: {} },
-    },
-  });
+  try {
+    const catalog = await db.catalog.create({ data: parsed.data });
+    await Promise.all([
+      db.catalogTheme.create({ data: { catalogId: catalog.id } }),
+      db.catalogPdfTheme.create({ data: { catalogId: catalog.id } }),
+    ]);
+  } catch (e) {
+    console.error("createCatalog error:", e);
+    return { erro: "Erro ao salvar catálogo. Tente novamente." };
+  }
 
   revalidatePath("/catalogos");
   revalidatePath("/catalogo");
