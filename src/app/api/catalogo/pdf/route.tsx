@@ -199,7 +199,7 @@ export async function GET(request: Request) {
 
     const safeTitle = docTitle.replace(/[^\w\s-]/g, "").replace(/\s+/g, "_").slice(0, 60);
 
-    return new Response(pdfBuffer, {
+    return new Response(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${safeTitle}.pdf"`,
