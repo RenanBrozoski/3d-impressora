@@ -58,8 +58,20 @@ export default async function CatalogoDetailPage({
       },
     }),
     db.catalogItem.findMany({
-      where: { deletedAt: null },
-      select: { id: true, nome: true, sku: true },
+      where: {
+        deletedAt: null,
+        catalogs: { none: { catalogId } },
+      },
+      select: {
+        id: true,
+        nome: true,
+        sku: true,
+        images: {
+          where: { isPrimary: true },
+          take: 1,
+          select: { url: true },
+        },
+      },
       orderBy: { nome: "asc" },
     }),
     db.catalogAttribute.findMany({

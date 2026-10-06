@@ -74,14 +74,35 @@ export async function createCatalogItem(
 
   // Se veio foto do ERP, criar imagem principal automaticamente
   if (erpFotoPath) {
-    await db.catalogItemImage.create({
-      data: {
-        itemId: item.id,
-        url: erpFotoPath,
-        isPrimary: true,
-        ordem: 0,
-      },
-    });
+    let publicUrl = erpFotoPath;
+
+    // Blobs privados do Vercel não são acessíveis publicamente — fazer re-upload como público
+    if (erpFotoPath.includes("private.blob.vercel-storage.com")) {
+      try {
+        const res = await fetch(erpFotoPath, {
+          headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
+        });
+        if (res.ok) {
+          const ct = res.headers.get("content-type") ?? "image/jpeg";
+          const ext = ct.includes("png") ? ".png" : ct.includes("webp") ? ".webp" : ".jpg";
+          const blob = await put(
+            `catalog-items/${item.id}/erp-photo${ext}`,
+            res.body!,
+            { access: "public", contentType: ct }
+          );
+          publicUrl = blob.url;
+        }
+      } catch {
+        // falhou — não criar imagem com URL inacessível
+        publicUrl = "";
+      }
+    }
+
+    if (publicUrl) {
+      await db.catalogItemImage.create({
+        data: { itemId: item.id, url: publicUrl, isPrimary: true, ordem: 0 },
+      });
+    }
   }
 
   revalidatePath("/catalogo-produtos");

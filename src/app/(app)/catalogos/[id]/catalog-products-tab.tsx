@@ -18,6 +18,7 @@ interface SimpleItem {
   id: number;
   nome: string;
   sku?: string | null;
+  images: { url: string }[];
 }
 
 interface CatalogProductsTabProps {
@@ -107,23 +108,40 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
               )}
               {addDropdownOpen && filteredAvailable.length > 0 && (
                 <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-52 overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-[var(--surface-solid)] shadow-xl">
-                  {filteredAvailable.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => {
-                        setSelectedId(String(item.id));
-                        setAddSelectedNome(item.nome);
-                        setAddSearch(item.nome + (item.sku ? ` (${item.sku})` : ""));
-                        setAddDropdownOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-[var(--surface-hover)]"
-                    >
-                      <span className="font-medium text-neutral-900 dark:text-white">{item.nome}</span>
-                      {item.sku && <span className="text-xs text-neutral-500">{item.sku}</span>}
-                    </button>
-                  ))}
+                  {filteredAvailable.map((item) => {
+                    const thumb = item.images[0]?.url;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setSelectedId(String(item.id));
+                          setAddSelectedNome(item.nome);
+                          setAddSearch(item.nome + (item.sku ? ` (${item.sku})` : ""));
+                          setAddDropdownOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition hover:bg-[var(--surface-hover)]"
+                      >
+                        {thumb ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={thumb}
+                            alt=""
+                            className="h-9 w-9 shrink-0 rounded-md border border-[var(--surface-border)] object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--surface-border)] bg-neutral-100 text-xs font-bold text-neutral-400 dark:bg-neutral-800">
+                            {item.nome.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium text-neutral-900 dark:text-white">{item.nome}</p>
+                          {item.sku && <p className="text-xs text-neutral-500">{item.sku}</p>}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

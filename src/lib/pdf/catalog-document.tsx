@@ -621,14 +621,20 @@ function ProductPageSingle({
   );
 }
 
-// ---------- Mini Card (2-per-page) ----------
+// ---------- Mini Card (2-per-page or 4-per-page) ----------
 
-function ProductMiniCard({ product, primary, secondary }: {
+function ProductMiniCard({ product, primary, secondary, compact = false }: {
   product: PdfProduct;
   primary: string;
   secondary: string;
+  compact?: boolean;
 }) {
   const primaryImage = getPrimaryImage(product.images);
+  const imageHeight = compact ? 88 : 140;
+  const maxAttrs = compact ? 2 : 4;
+  const nameFontSize = compact ? 9 : 10;
+  const bodyPad = compact ? 7 : 10;
+  const descFontSize = compact ? 7.5 : 8;
 
   return (
     <View style={{
@@ -640,19 +646,17 @@ function ProductMiniCard({ product, primary, secondary }: {
     }}>
       {/* Colored name header */}
       <View style={{
-        backgroundColor: primary, paddingHorizontal: 12, paddingVertical: 10,
+        backgroundColor: primary,
+        paddingHorizontal: compact ? 10 : 12,
+        paddingVertical: compact ? 7 : 10,
         position: "relative", overflow: "hidden",
       }}>
-        {/* Deco circle */}
         <View style={{
           position: "absolute", top: -16, right: -16,
           width: 50, height: 50, borderRadius: 25,
           backgroundColor: secondary, opacity: 0.4,
         }} />
-        <Text style={{
-          fontSize: 10, fontWeight: 700, color: "#ffffff",
-          lineHeight: 1.2,
-        }}>
+        <Text style={{ fontSize: nameFontSize, fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
           {product.nome}
         </Text>
         {product.sku && (
@@ -666,11 +670,11 @@ function ProductMiniCard({ product, primary, secondary }: {
       {primaryImage ? (
         <Image
           src={primaryImage.url}
-          style={{ width: "100%", height: 140, objectFit: "cover" }}
+          style={{ width: "100%", height: imageHeight, objectFit: "cover" }}
         />
       ) : (
         <View style={{
-          width: "100%", height: 140,
+          width: "100%", height: imageHeight,
           backgroundColor: BG_PAGE,
           alignItems: "center", justifyContent: "center",
         }}>
@@ -683,19 +687,19 @@ function ProductMiniCard({ product, primary, secondary }: {
       )}
 
       {/* Body */}
-      <View style={{ padding: 10 }}>
-        {/* Description */}
+      <View style={{ padding: bodyPad }}>
         {product.descricao && (
-          <Text style={{ fontSize: 8, color: TEXT_MID, lineHeight: 1.4, marginBottom: 7 }}>
-            {product.descricao}
+          <Text style={{ fontSize: descFontSize, color: TEXT_MID, lineHeight: 1.35, marginBottom: compact ? 5 : 7 }}>
+            {compact
+              ? product.descricao.slice(0, 80) + (product.descricao.length > 80 ? "…" : "")
+              : product.descricao}
           </Text>
         )}
 
-        {/* Specs */}
-        {product.attributeValues.slice(0, 4).map((av, i) => (
+        {product.attributeValues.slice(0, maxAttrs).map((av, i) => (
           <View key={i} style={{
             flexDirection: "row", justifyContent: "space-between",
-            paddingVertical: 4,
+            paddingVertical: compact ? 3 : 4,
             borderBottomWidth: 1, borderBottomColor: BORDER_COLOR,
           }}>
             <Text style={{ fontSize: 7.5, color: TEXT_MID }}>{av.attribute.nome}</Text>
@@ -705,8 +709,7 @@ function ProductMiniCard({ product, primary, secondary }: {
           </View>
         ))}
 
-        {/* Tags */}
-        {product.tags.length > 0 && (
+        {!compact && product.tags.length > 0 && (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 3, marginTop: 6 }}>
             {product.tags.slice(0, 4).map((t, i) => (
               <View key={i} style={{
@@ -720,6 +723,75 @@ function ProductMiniCard({ product, primary, secondary }: {
         )}
       </View>
     </View>
+  );
+}
+
+// ---------- Product Page — 4 per page (2×2 grid) ----------
+
+function ProductPageQuad({
+  products,
+  primary,
+  secondary,
+  nomeLoja,
+  logoDataUri,
+  cabecalhoTexto,
+  rodapeTexto,
+  exibirCabecalho,
+  exibirRodape,
+}: {
+  products: PdfProduct[];
+  primary: string;
+  secondary: string;
+  nomeLoja?: string;
+  logoDataUri?: string | null;
+  cabecalhoTexto?: string | null;
+  rodapeTexto?: string | null;
+  exibirCabecalho: boolean;
+  exibirRodape: boolean;
+}) {
+  const topPad = exibirCabecalho ? 48 : 20;
+  const botPad = exibirRodape ? 42 : 20;
+  const [p0, p1, p2, p3] = products;
+
+  return (
+    <Page size="A4" style={{ padding: 0, backgroundColor: BG_PAGE }}>
+      <PDFHeader
+        nomeLoja={nomeLoja} primary={primary} secondary={secondary}
+        cabecalhoTexto={cabecalhoTexto} logoDataUri={logoDataUri}
+        exibirCabecalho={exibirCabecalho}
+      />
+      <PDFFooter
+        nomeLoja={nomeLoja} rodapeTexto={rodapeTexto}
+        primary={primary} exibirRodape={exibirRodape}
+      />
+
+      <View style={{
+        paddingTop: topPad + 10, paddingBottom: botPad + 10,
+        paddingHorizontal: 22, gap: 10,
+      }}>
+        {/* Row 1 */}
+        <View style={{ flexDirection: "row", gap: 10, height: 290 }}>
+          <ProductMiniCard product={p0} primary={primary} secondary={secondary} compact />
+          {p1
+            ? <ProductMiniCard product={p1} primary={primary} secondary={secondary} compact />
+            : <View style={{ flex: 1 }} />
+          }
+        </View>
+        {/* Row 2 */}
+        {(p2 ?? p3) && (
+          <View style={{ flexDirection: "row", gap: 10, height: 290 }}>
+            {p2
+              ? <ProductMiniCard product={p2} primary={primary} secondary={secondary} compact />
+              : <View style={{ flex: 1 }} />
+            }
+            {p3
+              ? <ProductMiniCard product={p3} primary={primary} secondary={secondary} compact />
+              : <View style={{ flex: 1 }} />
+            }
+          </View>
+        )}
+      </View>
+    </Page>
   );
 }
 
@@ -836,6 +908,14 @@ export function CatalogDocument({
             {produtosPorPagina === 1
               ? section.products.map((product) => (
                   <ProductPageSingle key={product.id} product={product} {...sharedProps} />
+                ))
+              : produtosPorPagina >= 4
+              ? chunk(section.products, 4).map((group, i) => (
+                  <ProductPageQuad
+                    key={i}
+                    products={group}
+                    {...sharedProps}
+                  />
                 ))
               : chunk(section.products, 2).map((group, i) => (
                   <ProductPageDouble
