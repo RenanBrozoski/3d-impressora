@@ -229,25 +229,29 @@ function ProductCard({
 }) {
   const primaryImage = product.images.find((i) => i.isPrimary) ?? product.images[0];
   const previewAttrs = catalogAttributes.slice(0, 3);
+  const initial = product.nome.charAt(0).toUpperCase();
 
   const cardClass =
     cardStyle === "flat"
-      ? "border border-[var(--surface-border)] rounded-xl"
+      ? "border border-[var(--surface-border)] rounded-xl bg-white dark:bg-neutral-900"
       : cardStyle === "outlined"
-      ? "border-2 rounded-xl"
+      ? "border-2 rounded-xl bg-white dark:bg-neutral-900"
       : "card";
 
   return (
     <div
-      className={`flex flex-col overflow-hidden ${cardClass} cursor-pointer transition-all duration-200 hover:-translate-y-1`}
+      className={`group flex flex-col overflow-hidden ${cardClass} cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:shadow-xl`}
       style={cardStyle === "outlined" ? { borderColor: accentColor } : undefined}
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
     >
+      {/* Accent top bar */}
+      <div className="h-1.5 w-full shrink-0" style={{ background: accentColor }} />
+
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-900">
+      <div className="relative aspect-square overflow-hidden">
         {primaryImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -256,8 +260,16 @@ function ProductCard({
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-neutral-400 dark:text-neutral-600">
-            <ImageOff size={36} />
+          <div
+            className="flex h-full w-full flex-col items-center justify-center"
+            style={{ background: `${accentColor}14` }}
+          >
+            <span
+              className="text-6xl font-bold"
+              style={{ color: accentColor, opacity: 0.35 }}
+            >
+              {initial}
+            </span>
           </div>
         )}
       </div>
@@ -273,16 +285,31 @@ function ProductCard({
           </p>
         )}
 
+        {/* Tags */}
+        {product.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {product.tags.slice(0, 3).map((t) => (
+              <span
+                key={t.tag.nome}
+                className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+                style={{ background: `${accentColor}18`, color: accentColor }}
+              >
+                {t.tag.nome}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Preview attributes */}
         {previewAttrs.length > 0 && (
-          <div className="mt-3 space-y-1">
+          <div className="mt-3 space-y-1.5">
             {previewAttrs.map((attr) => {
               const val = getAttributeValue(product, attr.id);
               if (!val) return null;
               return (
                 <div key={attr.id} className="flex justify-between text-xs">
                   <span className="text-neutral-500 dark:text-neutral-400">{attr.nome}</span>
-                  <span className="font-medium text-neutral-700 dark:text-neutral-300">{val}</span>
+                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">{val}</span>
                 </div>
               );
             })}
@@ -290,7 +317,7 @@ function ProductCard({
         )}
 
         <button
-          className="mt-auto pt-4 text-sm font-medium transition-colors"
+          className="mt-auto pt-4 text-left text-xs font-semibold uppercase tracking-wide transition-opacity hover:opacity-80"
           style={{ color: accentColor }}
           onClick={onClick}
         >

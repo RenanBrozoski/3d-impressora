@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, FileDown } from "lucide-react";
 import { ProductGrid, type ProductItem, type CatalogAttributeForDisplay } from "./product-grid";
 
 type SearchParamsShape = {
@@ -132,6 +132,10 @@ export default async function CatalogoSlugPage({
   }
   // "ordem" keeps the original order from Prisma (orderBy: { ordem: "asc" })
 
+  const totalProducts = catalog.products.filter(
+    (rel) => rel.item.ativo && !rel.item.deletedAt
+  ).length;
+
   const hasFilters = q || tagFilter || attrFilters.length > 0;
 
   return (
@@ -145,204 +149,252 @@ export default async function CatalogoSlugPage({
         } as React.CSSProperties
       }
     >
-      {/* Hero header */}
+      {/* ===== HERO ===== */}
       <div
         className="relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${corPrimaria}, ${corSecundaria})` }}
+        style={{ background: `linear-gradient(135deg, ${corPrimaria} 0%, ${corSecundaria} 100%)` }}
       >
+        {/* Decorative circles */}
+        <div
+          className="pointer-events-none absolute -right-28 -top-28 h-96 w-96 rounded-full"
+          style={{ background: "rgba(255,255,255,0.1)" }}
+        />
+        <div
+          className="pointer-events-none absolute right-52 top-10 h-36 w-36 rounded-full"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        />
+        <div
+          className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full"
+          style={{ background: "rgba(255,255,255,0.08)" }}
+        />
+
         {imagemCapa && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imagemCapa}
             alt={catalog.nome}
-            className="absolute inset-0 h-full w-full object-cover opacity-30"
+            className="absolute inset-0 h-full w-full object-cover opacity-20"
           />
         )}
-        <div className="relative mx-auto max-w-7xl px-4 py-14">
+
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:py-28">
           {catalog.icone && (
-            <div className="mb-3 text-5xl" style={{ color: corTexto }}>
+            <div
+              className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl text-4xl"
+              style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+            >
               {catalog.icone}
             </div>
           )}
+
           <h1
-            className="text-3xl font-bold sm:text-4xl"
+            className="text-4xl font-bold tracking-tight sm:text-5xl"
             style={{ color: corTexto }}
           >
             {catalog.nome}
           </h1>
+
           {catalog.descricao && (
             <p
-              className="mt-2 max-w-2xl text-base opacity-85"
-              style={{ color: corTexto }}
+              className="mt-3 max-w-2xl text-lg leading-relaxed"
+              style={{ color: corTexto, opacity: 0.88 }}
             >
               {catalog.descricao}
             </p>
           )}
+
           {theme?.cabecalhoTexto && (
-            <p
-              className="mt-3 text-sm opacity-75"
-              style={{ color: corTexto }}
-            >
+            <p className="mt-2 text-sm" style={{ color: corTexto, opacity: 0.72 }}>
               {theme.cabecalhoTexto}
             </p>
           )}
+
+          {/* Actions */}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <span
+              className="rounded-full px-4 py-1.5 text-sm font-medium"
+              style={{ background: "rgba(255,255,255,0.18)", color: corTexto }}
+            >
+              {totalProducts} produto{totalProducts !== 1 ? "s" : ""}
+            </span>
+
+            <a
+              href={`/api/catalogo/pdf?catalogId=${catalog.id}`}
+              download
+              className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+              style={{ background: "rgba(255,255,255,0.95)", color: corPrimaria }}
+            >
+              <FileDown size={15} />
+              Baixar PDF
+            </a>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        {/* Search + Sort bar */}
-        <form method="get" className="mb-6 flex flex-wrap gap-3">
-          {/* Preserve other params */}
-          {tagFilter && <input type="hidden" name="tag" value={tagFilter} />}
-          {attrFilters.map(({ id, valor }) => (
-            <input key={id} type="hidden" name={`attr_${id}`} value={valor} />
-          ))}
+      {/* ===== STICKY SEARCH BAR ===== */}
+      <div className="sticky top-14 z-20 border-b border-neutral-200/70 bg-white/92 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-neutral-950/92">
+        <div className="mx-auto max-w-7xl px-4 py-3">
+          <form method="get" className="flex flex-wrap gap-2">
+            {tagFilter && <input type="hidden" name="tag" value={tagFilter} />}
+            {attrFilters.map(({ id, valor }) => (
+              <input key={id} type="hidden" name={`attr_${id}`} value={valor} />
+            ))}
 
-          <div className="relative flex-1" style={{ minWidth: 220 }}>
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
-            />
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Buscar por nome, SKU ou descrição..."
-              className="glow-ring w-full rounded-lg border border-neutral-300 bg-white/80 py-2 pl-9 pr-3 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500"
-            />
-          </div>
+            <div className="relative flex-1" style={{ minWidth: 200 }}>
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              />
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder="Buscar por nome, SKU ou descrição..."
+                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-3 text-sm text-neutral-900 outline-none transition focus:border-[var(--cat-primary)] focus:ring-2 focus:ring-[var(--cat-primary)]/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500"
+              />
+            </div>
 
-          <select
-            name="sort"
-            defaultValue={sort}
-            className="glow-ring rounded-lg border border-neutral-300 bg-white/80 px-3 py-2 text-sm text-neutral-900 outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
-          >
-            <option value="ordem">Ordem personalizada</option>
-            <option value="nome">Nome (A-Z)</option>
-            <option value="sku">SKU (A-Z)</option>
-            <option value="recentes">Mais recentes</option>
-          </select>
-
-          <button
-            type="submit"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: corPrimaria }}
-          >
-            Buscar
-          </button>
-
-          {hasFilters && (
-            <Link
-              href={`/catalogo/${slug}`}
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-600 transition hover:bg-neutral-50 dark:border-white/10 dark:text-neutral-400 dark:hover:bg-white/5"
+            <select
+              name="sort"
+              defaultValue={sort}
+              className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700 outline-none dark:border-white/10 dark:bg-white/5 dark:text-neutral-300"
             >
-              Limpar filtros
-            </Link>
-          )}
-        </form>
+              <option value="ordem">Ordem padrão</option>
+              <option value="nome">Nome A-Z</option>
+              <option value="sku">SKU A-Z</option>
+              <option value="recentes">Mais recentes</option>
+            </select>
 
-        {/* Filters sidebar + grid */}
-        <div className="flex gap-6">
-          {/* Sidebar filters */}
-          {(allTags.length > 0 || Object.keys(attrUniqueValues).length > 0) && (
-            <aside className="hidden w-52 shrink-0 lg:block">
-              <div className="sticky top-20 space-y-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                  <SlidersHorizontal size={15} />
-                  Filtros
-                </div>
+            <button
+              type="submit"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: corPrimaria }}
+            >
+              Buscar
+            </button>
 
-                {/* Tag filter */}
-                {allTags.length > 0 && (
-                  <div>
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Tags
-                    </p>
-                    <div className="space-y-1">
-                      <Link
-                        href={buildFilterUrl(slug, sp, "tag", "")}
-                        className={`block rounded px-2 py-1 text-sm transition ${
-                          !tagFilter
-                            ? "font-medium text-neutral-900 dark:text-white"
-                            : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                        }`}
-                      >
-                        Todas
-                      </Link>
-                      {allTags.map((t) => (
-                        <Link
-                          key={t}
-                          href={buildFilterUrl(slug, sp, "tag", t)}
-                          className={`block rounded px-2 py-1 text-sm transition ${
-                            tagFilter === t
-                              ? "font-medium"
-                              : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                          }`}
-                          style={tagFilter === t ? { color: corPrimaria } : undefined}
-                        >
-                          {t}
-                        </Link>
-                      ))}
-                    </div>
+            {hasFilters && (
+              <Link
+                href={`/catalogo/${slug}`}
+                className="flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-500 transition hover:bg-neutral-100 dark:border-white/10 dark:text-neutral-400 dark:hover:bg-white/5"
+              >
+                Limpar
+              </Link>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* ===== CONTENT ===== */}
+      <div
+        className="min-h-screen"
+        style={{ background: corFundo }}
+      >
+        <div className="mx-auto max-w-7xl px-4 py-8">
+          <div className="flex gap-8">
+            {/* Sidebar filters */}
+            {(allTags.length > 0 || Object.keys(attrUniqueValues).length > 0) && (
+              <aside className="hidden w-52 shrink-0 lg:block">
+                <div className="sticky top-32 space-y-6">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                    <SlidersHorizontal size={14} />
+                    Filtros
                   </div>
-                )}
 
-                {/* Attribute filters */}
-                {Object.entries(attrUniqueValues).map(([attrIdStr, vals]) => {
-                  const attrId = Number(attrIdStr);
-                  const attr = catalogAttributes.find((a) => a.id === attrId);
-                  if (!attr) return null;
-                  const currentVal = sp[`attr_${attrId}`] ?? "";
-                  return (
-                    <div key={attrId}>
-                      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                        {attr.nome}
-                        {attr.unidade ? ` (${attr.unidade})` : ""}
+                  {/* Tag filter */}
+                  {allTags.length > 0 && (
+                    <div>
+                      <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
+                        Tags
                       </p>
-                      <div className="space-y-1">
+                      <div className="flex flex-wrap gap-1.5">
                         <Link
-                          href={buildFilterUrl(slug, sp, `attr_${attrId}`, "")}
-                          className={`block rounded px-2 py-1 text-sm transition ${
-                            !currentVal
-                              ? "font-medium text-neutral-900 dark:text-white"
-                              : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                          }`}
+                          href={buildFilterUrl(slug, sp, "tag", "")}
+                          className="rounded-full px-3 py-1 text-xs font-medium transition"
+                          style={
+                            !tagFilter
+                              ? { background: corPrimaria, color: "#fff" }
+                              : { background: `${corPrimaria}22`, color: corPrimaria }
+                          }
                         >
-                          Todos
+                          Todas
                         </Link>
-                        {vals.map((v) => (
+                        {allTags.map((t) => (
                           <Link
-                            key={v}
-                            href={buildFilterUrl(slug, sp, `attr_${attrId}`, v)}
-                            className={`block rounded px-2 py-1 text-sm transition ${
-                              currentVal === v
-                                ? "font-medium"
-                                : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                            }`}
-                            style={currentVal === v ? { color: corPrimaria } : undefined}
+                            key={t}
+                            href={buildFilterUrl(slug, sp, "tag", t)}
+                            className="rounded-full px-3 py-1 text-xs font-medium transition"
+                            style={
+                              tagFilter === t
+                                ? { background: corPrimaria, color: "#fff" }
+                                : { background: `${corPrimaria}22`, color: corPrimaria }
+                            }
                           >
-                            {v}
+                            {t}
                           </Link>
                         ))}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </aside>
-          )}
+                  )}
 
-          {/* Product grid */}
-          <div className="min-w-0 flex-1">
-            <p className="mb-4 text-sm text-neutral-500 dark:text-neutral-400">
-              {items.length} produto{items.length !== 1 ? "s" : ""}
-              {hasFilters ? " encontrado" + (items.length !== 1 ? "s" : "") : ""}
-            </p>
-            <ProductGrid
-              products={items}
-              catalogAttributes={catalogAttributes}
-              accentColor={corPrimaria}
-              cardStyle={cardStyle}
-            />
+                  {/* Attribute filters */}
+                  {Object.entries(attrUniqueValues).map(([attrIdStr, vals]) => {
+                    const attrId = Number(attrIdStr);
+                    const attr = catalogAttributes.find((a) => a.id === attrId);
+                    if (!attr) return null;
+                    const currentVal = sp[`attr_${attrId}`] ?? "";
+                    return (
+                      <div key={attrId}>
+                        <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
+                          {attr.nome}
+                          {attr.unidade ? ` (${attr.unidade})` : ""}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Link
+                            href={buildFilterUrl(slug, sp, `attr_${attrId}`, "")}
+                            className="rounded-full px-3 py-1 text-xs font-medium transition"
+                            style={
+                              !currentVal
+                                ? { background: corPrimaria, color: "#fff" }
+                                : { background: `${corPrimaria}22`, color: corPrimaria }
+                            }
+                          >
+                            Todos
+                          </Link>
+                          {vals.map((v) => (
+                            <Link
+                              key={v}
+                              href={buildFilterUrl(slug, sp, `attr_${attrId}`, v)}
+                              className="rounded-full px-3 py-1 text-xs font-medium transition"
+                              style={
+                                currentVal === v
+                                  ? { background: corPrimaria, color: "#fff" }
+                                  : { background: `${corPrimaria}22`, color: corPrimaria }
+                              }
+                            >
+                              {v}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </aside>
+            )}
+
+            {/* Product grid */}
+            <div className="min-w-0 flex-1">
+              <p className="mb-5 text-sm text-neutral-500 dark:text-neutral-400">
+                {items.length} produto{items.length !== 1 ? "s" : ""}
+                {hasFilters ? " encontrado" + (items.length !== 1 ? "s" : "") : ""}
+              </p>
+              <ProductGrid
+                products={items}
+                catalogAttributes={catalogAttributes}
+                accentColor={corPrimaria}
+                cardStyle={cardStyle}
+              />
+            </div>
           </div>
         </div>
       </div>
