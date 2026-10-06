@@ -48,7 +48,10 @@ export default async function CatalogoAtributosPage() {
           ) : (
             <div className="flex flex-col gap-2">
               {attributes.map((attr) => (
-                <AttributeRow key={attr.id} attr={attr} />
+                <AttributeRow
+                  key={attr.id}
+                  attr={{ ...attr, opcoes: (attr.opcoes as string[] | null) }}
+                />
               ))}
             </div>
           )}
