@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileDown, Package, List, BookOpen } from "lucide-react";
+import { FileDown, Package, List, BookOpen, type LucideIcon } from "lucide-react";
 
 export interface CatalogForPdf {
   id: number;
@@ -70,7 +70,7 @@ export function PdfGenerator({ catalogs, products }: Props) {
             { id: "catalogo", label: "Por catálogo", icon: BookOpen },
             { id: "geral", label: "Geral completo", icon: FileDown },
             { id: "manual", label: "Seleção manual", icon: List },
-          ] as { id: Mode; label: string; icon: React.ElementType }[]
+          ] as { id: Mode; label: string; icon: LucideIcon }[]
         ).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
