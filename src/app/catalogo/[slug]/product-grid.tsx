@@ -230,6 +230,7 @@ function ProductCard({
   const primaryImage = product.images.find((i) => i.isPrimary) ?? product.images[0];
   const previewAttrs = catalogAttributes.slice(0, 3);
   const initial = product.nome.charAt(0).toUpperCase();
+  const [imgError, setImgError] = useState(false);
 
   const cardClass =
     cardStyle === "flat"
@@ -252,12 +253,13 @@ function ProductCard({
 
       {/* Image */}
       <div className="relative aspect-square overflow-hidden">
-        {primaryImage ? (
+        {primaryImage && !imgError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={primaryImage.url}
             alt={primaryImage.altText ?? product.nome}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImgError(true)}
           />
         ) : (
           <div

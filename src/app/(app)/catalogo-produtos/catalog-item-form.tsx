@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, Search, CheckCircle2 } from "lucide-react";
 import { createCatalogItem, updateCatalogItem } from "@/app/actions/catalog-items";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input";
@@ -71,6 +71,32 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
   const [material, setMaterial] = useState(item?.material ?? "");
   const [erpFotoPath, setErpFotoPath] = useState("");
 
+  // ERP combobox state
+  const [erpSearch, setErpSearch] = useState("");
+  const [erpDropdownOpen, setErpDropdownOpen] = useState(false);
+  const [selectedErpNome, setSelectedErpNome] = useState("");
+  const erpRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (erpRef.current && !erpRef.current.contains(e.target as Node)) {
+        setErpDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const filteredErpProducts = erpProducts
+    ? erpProducts.filter((p) => {
+        const q = erpSearch.toLowerCase();
+        return (
+          p.nome.toLowerCase().includes(q) ||
+          (p.categoria ?? "").toLowerCase().includes(q)
+        );
+      })
+    : [];
+
   function importFromErp(productId: string) {
     const product = erpProducts?.find((p) => String(p.id) === productId);
     if (!product) return;
@@ -123,20 +149,121 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
             Importar de produto existente
           </h2>
           <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
-            Selecione um produto do ERP para preencher os campos automaticamente.
+            Busque um produto do ERP para preencher os campos automaticamente.
           </p>
-          <select
-            onChange={(e) => importFromErp(e.target.value)}
-            defaultValue=""
-            className="w-full rounded-lg border border-[var(--accent)]/30 bg-white/80 px-3 py-2 text-sm text-neutral-900 outline-none transition-all focus:border-[var(--accent)] dark:bg-white/5 dark:text-white"
-          >
-            <option value="">— Selecionar produto do ERP —</option>
-            {erpProducts.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}{p.categoria ? ` (${p.categoria})` : ""}
-              </option>
-            ))}
-          </select>
+
+          <div ref={erpRef} className="relative">
+            <div className="relative">
+              <Search
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              />
+              <input
+                type="text"
+                placeholder="Buscar por nome ou categoria..."
+                value={erpSearch}
+                onChange={(e) => {
+                  setErpSearch(e.target.value);
+                  setErpDropdownOpen(true);
+                  if (selectedErpNome) setSelectedErpNome("");
+                }}
+                onFocus={() => setErpDropdownOpen(true)}
+                className="w-full rounded-lg border border-[var(--accent)]/30 bg-white/80 py-2.5 pl-9 pr-8 text-sm text-neutral-900 outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 dark:bg-white/5 dark:text-white"
+              />
+              {erpSearch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErpSearch("");
+                    setSelectedErpNome("");
+                    setErpFotoPath("");
+                    setErpDropdownOpen(false);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-neutral-400 transition hover:text-neutral-600 dark:hover:text-neutral-300"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown */}
+            {erpDropdownOpen && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-white shadow-xl dark:bg-neutral-900">
+                {filteredErpProducts.length === 0 ? (
+                  <p className="px-4 py-3 text-sm text-neutral-500">Nenhum produto encontrado.</p>
+                ) : (
+                  filteredErpProducts.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-neutral-50 dark:hover:bg-white/5"
+                      onClick={() => {
+                        setErpSearch(p.nome);
+                        setSelectedErpNome(p.nome);
+                        setErpDropdownOpen(false);
+                        importFromErp(String(p.id));
+                      }}
+                    >
+                      {p.fotoPath ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.fotoPath}
+                          alt=""
+                          className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-sm font-bold text-[var(--accent)]">
+                          {p.nome.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">
+                          {p.nome}
+                        </p>
+                        {p.categoria && (
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {p.categoria}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Confirmation banner */}
+          {selectedErpNome && (
+            <div className="mt-3 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800/40 dark:bg-emerald-900/20">
+              {erpFotoPath && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={erpFotoPath}
+                  alt=""
+                  className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).parentElement!.removeChild(
+                      e.target as HTMLImageElement
+                    );
+                  }}
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                  {selectedErpNome}
+                </p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                  Campos preenchidos automaticamente
+                  {erpFotoPath ? " · imagem importada" : ""}
+                </p>
+              </div>
+              <CheckCircle2 size={18} className="shrink-0 text-emerald-500" />
+            </div>
+          )}
         </section>
       )}
 

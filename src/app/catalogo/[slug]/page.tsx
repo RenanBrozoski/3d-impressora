@@ -232,7 +232,10 @@ export default async function CatalogoSlugPage({
       </div>
 
       {/* ===== STICKY SEARCH BAR ===== */}
-      <div className="sticky top-14 z-20 border-b border-neutral-200/70 bg-white/92 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-neutral-950/92">
+      <div
+        className="sticky top-14 z-20 border-b shadow-sm"
+        style={{ background: corFundo, borderColor: "rgba(0,0,0,0.08)" }}
+      >
         <div className="mx-auto max-w-7xl px-4 py-3">
           <form method="get" className="flex flex-wrap gap-2">
             {tagFilter && <input type="hidden" name="tag" value={tagFilter} />}
@@ -249,14 +252,14 @@ export default async function CatalogoSlugPage({
                 name="q"
                 defaultValue={q}
                 placeholder="Buscar por nome, SKU ou descrição..."
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-3 text-sm text-neutral-900 outline-none transition focus:border-[var(--cat-primary)] focus:ring-2 focus:ring-[var(--cat-primary)]/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500"
+                className="w-full rounded-lg border border-neutral-300 bg-white py-2 pl-9 pr-3 text-sm text-neutral-900 outline-none transition focus:border-[var(--cat-primary)] focus:ring-2 focus:ring-[var(--cat-primary)]/20"
               />
             </div>
 
             <select
               name="sort"
               defaultValue={sort}
-              className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700 outline-none dark:border-white/10 dark:bg-white/5 dark:text-neutral-300"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 outline-none"
             >
               <option value="ordem">Ordem padrão</option>
               <option value="nome">Nome A-Z</option>
