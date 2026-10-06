@@ -14,6 +14,10 @@ import {
   Inbox,
   Lightbulb,
   Settings,
+  BookOpen,
+  ShoppingBag,
+  FileDown,
+  Layers,
 } from "lucide-react";
 
 export type NavItem = {
@@ -21,6 +25,7 @@ export type NavItem = {
   label: string;
   icon: LucideIcon;
   adminOnly?: boolean;
+  section?: string;
 };
 
 export const NAV_ITEMS: NavItem[] = [
@@ -37,5 +42,10 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/financeiro", label: "Financeiro", icon: Wallet, adminOnly: true },
   { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/recomendacoes", label: "Recomendações", icon: Lightbulb, adminOnly: true },
+  // ---------- Catálogos ----------
+  { href: "/catalogos", label: "Catálogos", icon: BookOpen, section: "Catálogos" },
+  { href: "/catalogo-produtos", label: "Produtos do Catálogo", icon: ShoppingBag, section: "Catálogos" },
+  { href: "/catalogo-atributos", label: "Atributos", icon: Layers, section: "Catálogos" },
+  { href: "/pdf-catalogo", label: "Gerar PDF", icon: FileDown, section: "Catálogos" },
   { href: "/configuracoes", label: "Configurações", icon: Settings, adminOnly: true },
 ];

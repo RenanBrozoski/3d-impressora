@@ -542,6 +542,209 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// ---------- Sistema de Catálogos ----------
+
+// Catálogo (ou coleção futura — tipo distingue os dois sem migração)
+model Catalog {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  slug      String   @unique
+  descricao String?
+  icone     String?  // emoji ou nome de ícone lucide
+  ativo     Boolean  @default(true)
+  ordem     Int      @default(0)
+  tipo      String   @default("catalogo") // "catalogo" | "colecao" (futuro)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  theme      CatalogTheme?
+  pdfTheme   CatalogPdfTheme?
+  products   CatalogProductRelation[]
+  attributes CatalogAttributeLink[]
+
+  @@index([ativo])
+  @@index([ordem])
+  @@index([deletedAt])
+  @@map("catalogs")
+}
+
+// Tema visual da página WEB de um catálogo
+model CatalogTheme {
+  id        Int     @id @default(autoincrement())
+  catalogId Int     @unique
+  catalog   Catalog @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+
+  corPrimaria    String  @default("#7c3aed")
+  corSecundaria  String  @default("#2563eb")
+  corTexto       String  @default("#ffffff")
+  corFundo       String  @default("#f5f4fb")
+  imagemCapa     String?
+  imagemFundo    String?
+  logoUrl        String?
+  imagemDeco     String?
+  logoPosition   String  @default("left") // left | center | right
+  fundoOpacidade Float   @default(0.15)
+  cardStyle      String  @default("rounded") // rounded | flat | outlined
+  fontePrimaria  String?
+  fonteSecundaria String?
+  cabecalhoTexto String?
+  rodapeTexto    String?
+  extras         Json?
+
+  @@map("catalog_themes")
+}
+
+// Tema visual do PDF de um catálogo (independente do tema web)
+model CatalogPdfTheme {
+  id        Int     @id @default(autoincrement())
+  catalogId Int     @unique
+  catalog   Catalog @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+
+  corPrimaria       String  @default("#7c3aed")
+  corSecundaria     String  @default("#2563eb")
+  corTexto          String  @default("#14121f")
+  corFundo          String  @default("#ffffff")
+  imagemCapa        String?
+  imagemCapaSecao   String?
+  imagemFundo       String?
+  logoUrl           String?
+  imagemDeco        String?
+  produtosPorPagina Int     @default(2)
+  exibirNumeracao   Boolean @default(true)
+  exibirCabecalho   Boolean @default(true)
+  exibirRodape      Boolean @default(true)
+  cabecalhoTexto    String?
+  rodapeTexto       String?
+  fontePrimaria     String?
+  fonteSecundaria   String?
+  extras            Json?
+
+  @@map("catalog_pdf_themes")
+}
+
+// Produto independente — pode aparecer em múltiplos catálogos
+model CatalogItem {
+  id          Int       @id @default(autoincrement())
+  nome        String
+  sku         String?   @unique
+  descricao   String?
+  tamanhoMin  String?
+  tamanhoMax  String?
+  dimensoes   String?
+  material    String?
+  cor         String?
+  peso        String?
+  observacoes String?
+  ativo       Boolean   @default(true)
+  ordemGlobal Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  // createdBy Int? -- preparado para auditoria futura
+  // updatedBy Int?
+
+  images          CatalogItemImage[]
+  catalogs        CatalogProductRelation[]
+  tags            CatalogItemTag[]
+  attributeValues CatalogItemAttributeValue[]
+
+  @@index([ativo])
+  @@index([ordemGlobal])
+  @@index([deletedAt])
+  @@map("catalog_items")
+}
+
+// Tabela N:M entre Catalog e CatalogItem — com ordem por catálogo
+model CatalogProductRelation {
+  catalogId Int
+  catalog   Catalog     @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+  itemId    Int
+  item      CatalogItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  ordem     Int         @default(0)
+
+  @@id([catalogId, itemId])
+  @@index([catalogId, ordem])
+  @@map("catalog_product_relations")
+}
+
+// Imagens do produto do catálogo
+model CatalogItemImage {
+  id           Int         @id @default(autoincrement())
+  itemId       Int
+  item         CatalogItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  url          String
+  nomeOriginal String?
+  altText      String?
+  isPrimary    Boolean     @default(false)
+  ordem        Int         @default(0)
+  createdAt    DateTime    @default(now())
+
+  @@index([itemId, ordem])
+  @@map("catalog_item_images")
+}
+
+// Tag — entidade própria para suportar filtros sem full-text search
+model CatalogTag {
+  id   Int    @id @default(autoincrement())
+  nome String @unique
+
+  items CatalogItemTag[]
+
+  @@map("catalog_tags")
+}
+
+// Relação N:M entre CatalogItem e CatalogTag
+model CatalogItemTag {
+  itemId Int
+  item   CatalogItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tagId  Int
+  tag    CatalogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+  @@map("catalog_item_tags")
+}
+
+// Pool global de atributos reutilizáveis
+model CatalogAttribute {
+  id      Int     @id @default(autoincrement())
+  nome    String  @unique // "Tamanho", "Material", "Faixa Etária"
+  tipo    String  @default("text") // text | number | select | boolean
+  opcoes  Json?   // para tipo = "select": ["Pequeno","Médio","Grande"]
+  unidade String? // ex: "cm", "kg", "anos"
+
+  catalogs CatalogAttributeLink[]
+  values   CatalogItemAttributeValue[]
+
+  @@map("catalog_attributes")
+}
+
+// Ativa um atributo global em um catálogo específico
+model CatalogAttributeLink {
+  catalogId   Int
+  catalog     Catalog          @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+  attributeId Int
+  attribute   CatalogAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  ordem       Int              @default(0)
+  obrigatorio Boolean          @default(false)
+
+  @@id([catalogId, attributeId])
+  @@index([catalogId, ordem])
+  @@map("catalog_attribute_links")
+}
+
+// Valor de um atributo para um produto específico
+model CatalogItemAttributeValue {
+  itemId      Int
+  item        CatalogItem      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  attributeId Int
+  attribute   CatalogAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  valor       String
+
+  @@id([itemId, attributeId])
+  @@map("catalog_item_attribute_values")
+}
+
 // ---------- Portal público do cliente ----------
 
 model ClientRequest {
