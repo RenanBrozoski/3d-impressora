@@ -21,6 +21,7 @@ type ErpProduct = {
   descricao: string | null;
   materialRecomendado: string | null;
   categoria: string | null;
+  fotoPath: string | null;
 };
 
 type ItemData = {
@@ -68,6 +69,7 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
   const [nome, setNome] = useState(item?.nome ?? "");
   const [descricao, setDescricao] = useState(item?.descricao ?? "");
   const [material, setMaterial] = useState(item?.material ?? "");
+  const [erpFotoPath, setErpFotoPath] = useState("");
 
   function importFromErp(productId: string) {
     const product = erpProducts?.find((p) => String(p.id) === productId);
@@ -75,6 +77,7 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
     setNome(product.nome);
     setDescricao(product.descricao ?? "");
     setMaterial(product.materialRecomendado ?? "");
+    setErpFotoPath(product.fotoPath ?? "");
   }
 
   // Get attributes for the selected catalogs
@@ -111,6 +114,7 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
       <input type="hidden" name="tags" value={JSON.stringify(tags)} />
       <input type="hidden" name="attributeValues" value={JSON.stringify(attrValues)} />
       <input type="hidden" name="ativo" value={ativo ? "true" : "false"} />
+      {erpFotoPath && <input type="hidden" name="erpFotoPath" value={erpFotoPath} />}
 
       {/* Importar de produto existente */}
       {!isEditing && erpProducts && erpProducts.length > 0 && (

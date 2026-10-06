@@ -18,7 +18,7 @@ export default async function NovoCatalogoProdutoPage() {
     }),
     db.product.findMany({
       where: { status: "ATIVO" },
-      select: { id: true, nome: true, descricao: true, materialRecomendado: true, categoria: true },
+      select: { id: true, nome: true, descricao: true, materialRecomendado: true, categoria: true, fotoPath: true },
       orderBy: { nome: "asc" },
     }),
   ]);

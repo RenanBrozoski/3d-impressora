@@ -16,6 +16,7 @@ export async function createCatalogItem(
   const catalogIdsRaw = formData.get("catalogIds");
   const tagsRaw = formData.get("tags");
   const attrRaw = formData.get("attributeValues");
+  const erpFotoPath = formData.get("erpFotoPath")?.toString().trim() || null;
 
   const raw = {
     nome: formData.get("nome"),
@@ -70,6 +71,18 @@ export async function createCatalogItem(
       },
     },
   });
+
+  // Se veio foto do ERP, criar imagem principal automaticamente
+  if (erpFotoPath) {
+    await db.catalogItemImage.create({
+      data: {
+        itemId: item.id,
+        url: erpFotoPath,
+        isPrimary: true,
+        ordem: 0,
+      },
+    });
+  }
 
   revalidatePath("/catalogo-produtos");
   catalogIds.forEach((cid) => revalidatePath(`/catalogos/${cid}`));
