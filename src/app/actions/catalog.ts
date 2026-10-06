@@ -137,11 +137,13 @@ export async function duplicateCatalog(id: number): Promise<CatalogActionState> 
       nome: `${original.nome} (cópia)`,
       slug,
       ativo: false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       theme: theme
-        ? { create: (({ id: _i, catalogId: _c, ...t }) => t)(theme) }
+        ? { create: (({ id: _i, catalogId: _c, ...t }) => t)(theme) as any }
         : { create: {} },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pdfTheme: pdfTheme
-        ? { create: (({ id: _i, catalogId: _c, ...t }) => t)(pdfTheme) }
+        ? { create: (({ id: _i, catalogId: _c, ...t }) => t)(pdfTheme) as any }
         : { create: {} },
       attributes: {
         createMany: {
@@ -202,7 +204,7 @@ export async function saveCatalogTheme(
   };
 
   const parsed = CatalogThemeSchema.safeParse(raw);
-  if (!parsed.success) return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+  if (!parsed.success) return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
 
   await db.catalogTheme.upsert({
     where: { catalogId },
@@ -243,7 +245,7 @@ export async function saveCatalogPdfTheme(
   };
 
   const parsed = CatalogPdfThemeSchema.safeParse(raw);
-  if (!parsed.success) return { erro: parsed.error.errors.map((e) => e.message).join("; ") };
+  if (!parsed.success) return { erro: parsed.error.issues.map((e) => e.message).join("; ") };
 
   await db.catalogPdfTheme.upsert({
     where: { catalogId },
