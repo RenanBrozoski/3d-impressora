@@ -137,8 +137,12 @@ export async function duplicateCatalog(id: number): Promise<CatalogActionState> 
       nome: `${original.nome} (cópia)`,
       slug,
       ativo: false,
-      theme: theme ? { create: { ...theme, id: undefined, catalogId: undefined } } : { create: {} },
-      pdfTheme: pdfTheme ? { create: { ...pdfTheme, id: undefined, catalogId: undefined } } : { create: {} },
+      theme: theme
+        ? { create: (({ id: _i, catalogId: _c, ...t }) => t)(theme) }
+        : { create: {} },
+      pdfTheme: pdfTheme
+        ? { create: (({ id: _i, catalogId: _c, ...t }) => t)(pdfTheme) }
+        : { create: {} },
       attributes: {
         createMany: {
           data: attributes.map((a) => ({ attributeId: a.attributeId, ordem: a.ordem, obrigatorio: a.obrigatorio })),
