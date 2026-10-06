@@ -53,7 +53,7 @@ export function ImageUploader({ itemId, initialImages = [] }: ImageUploaderProps
   function handleDelete(imageId: number) {
     startTransition(async () => {
       const result = await deleteCatalogItemImage(imageId);
-      if ("sucesso" in result) {
+      if (result && "sucesso" in result) {
         setImages((prev) => {
           const remaining = prev.filter((i) => i.id !== imageId);
           const wasPrimary = prev.find((i) => i.id === imageId)?.isPrimary;
@@ -69,7 +69,7 @@ export function ImageUploader({ itemId, initialImages = [] }: ImageUploaderProps
   function handleSetPrimary(imageId: number) {
     startTransition(async () => {
       const result = await setPrimaryImage(imageId, itemId);
-      if ("sucesso" in result) {
+      if (result && "sucesso" in result) {
         setImages((prev) => prev.map((img) => ({ ...img, isPrimary: img.id === imageId })));
       }
     });
