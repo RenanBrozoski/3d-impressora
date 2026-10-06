@@ -520,7 +520,7 @@ function ProductPageSingle({
         {/* Right column — info */}
         <View style={{ flex: 1 }}>
           {/* Name & SKU */}
-          <View style={{ breakInside: "avoid", marginBottom: 6 }}>
+          <View style={{ marginBottom: 6 }}>
             <Text
               style={{
                 fontSize: 16,
@@ -636,7 +636,6 @@ function ProductMiniCard({
         borderColor: BORDER,
         borderRadius: 8,
         overflow: "hidden",
-        breakInside: "avoid",
       }}
     >
       {primaryImage ? (
@@ -660,7 +659,7 @@ function ProductMiniCard({
 
       <View style={{ padding: 10 }}>
         {/* Name + SKU */}
-        <View style={{ breakInside: "avoid" }}>
+        <View>
           <Text
             style={{
               fontSize: 10,
