@@ -15,6 +15,13 @@ type Attribute = {
   opcoes: string[] | null;
   unidade: string | null;
 };
+type ErpProduct = {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  materialRecomendado: string | null;
+  categoria: string | null;
+};
 
 type ItemData = {
   id: number;
@@ -39,9 +46,10 @@ interface CatalogItemFormProps {
   item?: ItemData;
   catalogs: CatalogOption[];
   attributes: Attribute[];
+  erpProducts?: ErpProduct[];
 }
 
-export function CatalogItemForm({ item, catalogs, attributes }: CatalogItemFormProps) {
+export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: CatalogItemFormProps) {
   const router = useRouter();
   const isEditing = !!item;
 
@@ -55,6 +63,19 @@ export function CatalogItemForm({ item, catalogs, attributes }: CatalogItemFormP
   const [tags, setTags] = useState<string[]>(item?.tags ?? []);
   const [tagInput, setTagInput] = useState("");
   const [attrValues, setAttrValues] = useState<Record<string, string>>(item?.attributeValues ?? {});
+
+  // Controlled fields (used for import)
+  const [nome, setNome] = useState(item?.nome ?? "");
+  const [descricao, setDescricao] = useState(item?.descricao ?? "");
+  const [material, setMaterial] = useState(item?.material ?? "");
+
+  function importFromErp(productId: string) {
+    const product = erpProducts?.find((p) => String(p.id) === productId);
+    if (!product) return;
+    setNome(product.nome);
+    setDescricao(product.descricao ?? "");
+    setMaterial(product.materialRecomendado ?? "");
+  }
 
   // Get attributes for the selected catalogs
   // (attributes are already pre-filtered by parent, or show all)
@@ -91,6 +112,30 @@ export function CatalogItemForm({ item, catalogs, attributes }: CatalogItemFormP
       <input type="hidden" name="attributeValues" value={JSON.stringify(attrValues)} />
       <input type="hidden" name="ativo" value={ativo ? "true" : "false"} />
 
+      {/* Importar de produto existente */}
+      {!isEditing && erpProducts && erpProducts.length > 0 && (
+        <section className="card border-[var(--accent)]/30 bg-[var(--accent)]/5 p-5">
+          <h2 className="mb-1 text-sm font-semibold text-[var(--accent)]">
+            Importar de produto existente
+          </h2>
+          <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+            Selecione um produto do ERP para preencher os campos automaticamente.
+          </p>
+          <select
+            onChange={(e) => importFromErp(e.target.value)}
+            defaultValue=""
+            className="w-full rounded-lg border border-[var(--accent)]/30 bg-white/80 px-3 py-2 text-sm text-neutral-900 outline-none transition-all focus:border-[var(--accent)] dark:bg-white/5 dark:text-white"
+          >
+            <option value="">— Selecionar produto do ERP —</option>
+            {erpProducts.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome}{p.categoria ? ` (${p.categoria})` : ""}
+              </option>
+            ))}
+          </select>
+        </section>
+      )}
+
       {/* Dados básicos */}
       <section className="card p-5">
         <h2 className="mb-4 text-sm font-semibold text-neutral-700 dark:text-neutral-300">
@@ -100,7 +145,7 @@ export function CatalogItemForm({ item, catalogs, attributes }: CatalogItemFormP
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="nome">Nome *</Label>
-            <Input id="nome" name="nome" required defaultValue={item?.nome} placeholder="Nome do produto" />
+            <Input id="nome" name="nome" required value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome do produto" />
           </div>
           <div>
             <Label htmlFor="sku">SKU</Label>
@@ -110,13 +155,13 @@ export function CatalogItemForm({ item, catalogs, attributes }: CatalogItemFormP
 
         <div className="mt-4">
           <Label htmlFor="descricao">Descrição</Label>
-          <Textarea id="descricao" name="descricao" rows={4} defaultValue={item?.descricao ?? ""} placeholder="Descrição detalhada do produto..." />
+          <Textarea id="descricao" name="descricao" rows={4} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Descrição detalhada do produto..." />
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <Label htmlFor="material">Material</Label>
-            <Input id="material" name="material" defaultValue={item?.material ?? ""} placeholder="Ex: PLA" />
+            <Input id="material" name="material" value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="Ex: PLA" />
           </div>
           <div>
             <Label htmlFor="cor">Cor</Label>

@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { CatalogItemForm } from "../catalog-item-form";
 
 export default async function NovoCatalogoProdutoPage() {
-  const [catalogs, attributes] = await Promise.all([
+  const [catalogs, attributes, erpProducts] = await Promise.all([
     db.catalog.findMany({
       where: { deletedAt: null },
       select: { id: true, nome: true },
@@ -14,6 +14,11 @@ export default async function NovoCatalogoProdutoPage() {
     }),
     db.catalogAttribute.findMany({
       select: { id: true, nome: true, tipo: true, opcoes: true, unidade: true },
+      orderBy: { nome: "asc" },
+    }),
+    db.product.findMany({
+      where: { status: "ATIVO" },
+      select: { id: true, nome: true, descricao: true, materialRecomendado: true, categoria: true },
       orderBy: { nome: "asc" },
     }),
   ]);
@@ -36,7 +41,7 @@ export default async function NovoCatalogoProdutoPage() {
         <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">Novo produto</h1>
       </div>
 
-      <CatalogItemForm catalogs={catalogs} attributes={attributesWithOptions} />
+      <CatalogItemForm catalogs={catalogs} attributes={attributesWithOptions} erpProducts={erpProducts} />
     </div>
   );
 }
