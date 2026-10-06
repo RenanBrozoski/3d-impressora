@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
 import { PdfGenerator, type CatalogForPdf, type ProductForPdf } from "./pdf-generator";

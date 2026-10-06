@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "@/lib/db";
 import { Layers } from "lucide-react";
 import { AttributeRow } from "./attribute-row";
