@@ -4,6 +4,22 @@ import { useState } from "react";
 import { X, ImageOff, Tag } from "lucide-react";
 import { ImageGallery } from "@/components/catalog/image-gallery";
 
+function colorIsDark(hex: string): boolean {
+  if (!hex || !hex.startsWith("#") || hex.length < 7) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.45;
+}
+
+function lightenHex(hex: string, amount: number): string {
+  if (!hex || !hex.startsWith("#") || hex.length < 7) return hex;
+  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
+  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + amount);
+  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + amount);
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 export interface ProductImage {
   id: number;
   url: string;
@@ -48,6 +64,7 @@ interface Props {
   catalogAttributes: CatalogAttributeForDisplay[];
   accentColor?: string;
   cardStyle?: string;
+  bgColor?: string;
 }
 
 function formatAttributeValue(valor: string, unidade?: string | null) {
@@ -219,12 +236,14 @@ function ProductCard({
   catalogAttributes,
   accentColor,
   cardStyle,
+  bgColor,
   onClick,
 }: {
   product: ProductItem;
   catalogAttributes: CatalogAttributeForDisplay[];
   accentColor: string;
   cardStyle: string;
+  bgColor: string;
   onClick: () => void;
 }) {
   const primaryImage = product.images.find((i) => i.isPrimary) ?? product.images[0];
@@ -232,17 +251,26 @@ function ProductCard({
   const initial = product.nome.charAt(0).toUpperCase();
   const [imgError, setImgError] = useState(false);
 
+  const dark = colorIsDark(bgColor);
+  const cardBg = dark ? lightenHex(bgColor, 28) : "#ffffff";
+  const textMain = dark ? "#f9fafb" : "#111827";
+  const textSub = dark ? "#a1a1aa" : "#6b7280";
+  const borderCol = dark ? "rgba(255,255,255,0.1)" : "#e5e7eb";
+
+  const baseStyle = { background: cardBg, borderColor: borderCol };
   const cardClass =
-    cardStyle === "flat"
-      ? "border border-[var(--surface-border)] rounded-xl bg-white dark:bg-neutral-900"
-      : cardStyle === "outlined"
-      ? "border-2 rounded-xl bg-white dark:bg-neutral-900"
-      : "card";
+    cardStyle === "outlined"
+      ? "rounded-xl border-2"
+      : "rounded-xl border shadow-sm";
 
   return (
     <div
       className={`group flex flex-col overflow-hidden ${cardClass} cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:shadow-xl`}
-      style={cardStyle === "outlined" ? { borderColor: accentColor } : undefined}
+      style={
+        cardStyle === "outlined"
+          ? { ...baseStyle, borderColor: accentColor }
+          : baseStyle
+      }
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -257,7 +285,7 @@ function ProductCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={primaryImage.url}
-            alt={primaryImage.altText ?? product.nome}
+            alt=""
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={() => setImgError(true)}
           />
@@ -278,11 +306,11 @@ function ProductCard({
 
       {/* Info */}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="font-semibold text-neutral-900 dark:text-white line-clamp-2">
+        <h3 className="font-semibold line-clamp-2" style={{ color: textMain }}>
           {product.nome}
         </h3>
         {product.sku && (
-          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="mt-0.5 text-xs" style={{ color: textSub }}>
             SKU: {product.sku}
           </p>
         )}
@@ -294,7 +322,7 @@ function ProductCard({
               <span
                 key={t.tag.nome}
                 className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
-                style={{ background: `${accentColor}18`, color: accentColor }}
+                style={{ background: `${accentColor}22`, color: accentColor }}
               >
                 {t.tag.nome}
               </span>
@@ -310,8 +338,8 @@ function ProductCard({
               if (!val) return null;
               return (
                 <div key={attr.id} className="flex justify-between text-xs">
-                  <span className="text-neutral-500 dark:text-neutral-400">{attr.nome}</span>
-                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">{val}</span>
+                  <span style={{ color: textSub }}>{attr.nome}</span>
+                  <span className="font-semibold" style={{ color: textMain }}>{val}</span>
                 </div>
               );
             })}
@@ -335,6 +363,7 @@ export function ProductGrid({
   catalogAttributes,
   accentColor = "#7c3aed",
   cardStyle = "rounded",
+  bgColor = "#f8f7fc",
 }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
 
@@ -356,6 +385,7 @@ export function ProductGrid({
             catalogAttributes={catalogAttributes}
             accentColor={accentColor}
             cardStyle={cardStyle}
+            bgColor={bgColor}
             onClick={() => setSelectedProduct(product)}
           />
         ))}

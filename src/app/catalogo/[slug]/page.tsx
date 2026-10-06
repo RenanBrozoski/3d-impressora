@@ -396,6 +396,7 @@ export default async function CatalogoSlugPage({
                 catalogAttributes={catalogAttributes}
                 accentColor={corPrimaria}
                 cardStyle={cardStyle}
+                bgColor={corFundo}
               />
             </div>
           </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ImageOff, Plus, X, Loader2 } from "lucide-react";
+import { Image as ImageIcon, ImageOff, Plus, Search, X, Loader2 } from "lucide-react";
 import { addItemToCatalog, removeItemFromCatalog } from "@/app/actions/catalog-items";
 import { useRouter } from "next/navigation";
 
@@ -32,14 +32,29 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
   const [selectedId, setSelectedId] = useState<string>("");
   const [removingId, setRemovingId] = useState<number | null>(null);
 
+  // Combobox state
+  const [addSearch, setAddSearch] = useState("");
+  const [addDropdownOpen, setAddDropdownOpen] = useState(false);
+  const [addSelectedNome, setAddSelectedNome] = useState("");
+  const addRef = useRef<HTMLDivElement>(null);
+
   const existingIds = new Set(items.map((i) => i.id));
   const available = allItems.filter((i) => !existingIds.has(i.id));
+  const filteredAvailable = available.filter((i) => {
+    const q = addSearch.toLowerCase();
+    return (
+      i.nome.toLowerCase().includes(q) ||
+      (i.sku ?? "").toLowerCase().includes(q)
+    );
+  });
 
   function handleAdd() {
     if (!selectedId) return;
     startTransition(async () => {
       await addItemToCatalog(Number(selectedId), catalogId);
       setSelectedId("");
+      setAddSearch("");
+      setAddSelectedNome("");
       router.refresh();
     });
   }
@@ -62,18 +77,56 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
             Adicionar produto existente
           </p>
           <div className="flex gap-2">
-            <select
-              value={selectedId}
-              onChange={(e) => setSelectedId(e.target.value)}
-              className="flex-1 rounded-lg border border-[var(--surface-border)] bg-[var(--surface)] px-3 py-2 text-sm text-neutral-900 outline-none focus:border-[var(--accent)] dark:text-white"
-            >
-              <option value="">Selecione um produto...</option>
-              {available.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nome}{item.sku ? ` (${item.sku})` : ""}
-                </option>
-              ))}
-            </select>
+            <div ref={addRef} className="relative flex-1">
+              <Search
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+              />
+              <input
+                type="text"
+                placeholder="Buscar produto por nome ou SKU..."
+                value={addSearch}
+                onChange={(e) => {
+                  setAddSearch(e.target.value);
+                  setAddDropdownOpen(true);
+                  if (addSelectedNome) { setAddSelectedNome(""); setSelectedId(""); }
+                }}
+                onFocus={() => setAddDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setAddDropdownOpen(false), 150)}
+                className="w-full rounded-lg border border-[var(--surface-border)] bg-[var(--surface)] py-2 pl-9 pr-8 text-sm text-neutral-900 outline-none focus:border-[var(--accent)] dark:text-white"
+              />
+              {addSearch && (
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { setAddSearch(""); setSelectedId(""); setAddSelectedNome(""); }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                >
+                  <X size={12} />
+                </button>
+              )}
+              {addDropdownOpen && filteredAvailable.length > 0 && (
+                <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-52 overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-[var(--surface-solid)] shadow-xl">
+                  {filteredAvailable.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setSelectedId(String(item.id));
+                        setAddSelectedNome(item.nome);
+                        setAddSearch(item.nome + (item.sku ? ` (${item.sku})` : ""));
+                        setAddDropdownOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-[var(--surface-hover)]"
+                    >
+                      <span className="font-medium text-neutral-900 dark:text-white">{item.nome}</span>
+                      {item.sku && <span className="text-xs text-neutral-500">{item.sku}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               type="button"
               onClick={handleAdd}
@@ -143,6 +196,15 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
                   >
                     {item.ativo ? "Ativo" : "Inativo"}
                   </span>
+
+                  <Link
+                    href={`/catalogo-produtos/${item.id}?tab=imagens`}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[var(--surface-border)] px-2 py-1 text-xs text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-white/5"
+                    title="Gerenciar imagens"
+                  >
+                    <ImageIcon size={12} />
+                    Imagens
+                  </Link>
 
                   <Link
                     href={`/catalogo-produtos/${item.id}`}
