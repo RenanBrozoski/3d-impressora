@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Copy, Trash2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CopyLinkIconButton } from "@/components/catalog/public-link";
 import {
   deleteCatalog,
   duplicateCatalog,
@@ -77,6 +78,7 @@ export function CatalogRowActions({ catalog }: CatalogRowActionsProps) {
           <Eye size={15} />
         </Button>
       </Link>
+      <CopyLinkIconButton path={`/catalogo/${catalog.slug}`} />
       <Link href={`/catalogos/${catalog.id}`}>
         <Button variant="ghost" size="icon" aria-label="Detalhes">
           <Pencil size={15} />

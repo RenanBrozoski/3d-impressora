@@ -630,7 +630,7 @@ function ProductMiniCard({ product, primary, secondary, compact = false }: {
   compact?: boolean;
 }) {
   const primaryImage = getPrimaryImage(product.images);
-  const imageHeight = compact ? 88 : 140;
+  const imageHeight = compact ? 225 : 360;
   const maxAttrs = compact ? 2 : 4;
   const nameFontSize = compact ? 9 : 10;
   const bodyPad = compact ? 7 : 10;
@@ -668,10 +668,12 @@ function ProductMiniCard({ product, primary, secondary, compact = false }: {
 
       {/* Image */}
       {primaryImage ? (
-        <Image
-          src={primaryImage.url}
-          style={{ width: "100%", height: imageHeight, objectFit: "cover" }}
-        />
+        <View style={{ width: "100%", height: imageHeight, backgroundColor: BG_CARD, padding: 6 }}>
+          <Image
+            src={primaryImage.url}
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
+        </View>
       ) : (
         <View style={{
           width: "100%", height: imageHeight,
@@ -770,7 +772,7 @@ function ProductPageQuad({
         paddingHorizontal: 22, gap: 10,
       }}>
         {/* Row 1 */}
-        <View style={{ flexDirection: "row", gap: 10, height: 290 }}>
+        <View style={{ flexDirection: "row", gap: 10, height: 352 }}>
           <ProductMiniCard product={p0} primary={primary} secondary={secondary} compact />
           {p1
             ? <ProductMiniCard product={p1} primary={primary} secondary={secondary} compact />
@@ -779,7 +781,7 @@ function ProductPageQuad({
         </View>
         {/* Row 2 */}
         {(p2 ?? p3) && (
-          <View style={{ flexDirection: "row", gap: 10, height: 290 }}>
+          <View style={{ flexDirection: "row", gap: 10, height: 352 }}>
             {p2
               ? <ProductMiniCard product={p2} primary={primary} secondary={secondary} compact />
               : <View style={{ flex: 1 }} />

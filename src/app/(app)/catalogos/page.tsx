@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/dal";
 import { Plus, BookOpen, ExternalLink } from "lucide-react";
 import { CatalogSortableList } from "./catalog-sortable-list";
+import { PublicLinkBar } from "@/components/catalog/public-link";
 
 export default async function CatalogosPage() {
   await getCurrentUser();
@@ -41,6 +42,10 @@ export default async function CatalogosPage() {
           <Plus size={16} />
           Novo catálogo
         </Link>
+      </div>
+
+      <div className="mb-6">
+        <PublicLinkBar path="/catalogo" label="Vitrine com todos os catálogos" />
       </div>
 
       {catalogs.length === 0 ? (

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const PUBLIC_ROUTES = ["/login", "/solicitar", "/acompanhar"];
+const PUBLIC_ROUTES = ["/login", "/solicitar", "/acompanhar", "/catalogo"];
 
 function isPublicRoute(pathname: string) {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));

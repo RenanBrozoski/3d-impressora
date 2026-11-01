@@ -11,6 +11,7 @@ import { CatalogProductsTab } from "./catalog-products-tab";
 import { CatalogAttributesTab } from "./catalog-attributes-tab";
 import { CatalogThemeForm } from "./catalog-theme-form";
 import { CatalogPdfThemeForm } from "./catalog-pdf-theme-form";
+import { PublicLinkBar } from "@/components/catalog/public-link";
 
 type Tab = "produtos" | "atributos" | "tema-web" | "tema-pdf";
 
@@ -140,6 +141,13 @@ export default async function CatalogoDetailPage({
         {catalog.descricao && (
           <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{catalog.descricao}</p>
         )}
+
+        <div className="mt-4">
+          <PublicLinkBar
+            path={`/catalogo/${catalog.slug}`}
+            label={catalog.ativo ? "Link do catálogo" : "Link do catálogo (inativo, não abre para clientes)"}
+          />
+        </div>
       </div>
 
       {/* Tabs nav */}
