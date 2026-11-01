@@ -3,6 +3,7 @@
 import { useState, useRef, useTransition } from "react";
 import { Upload, X, Loader2, Star, StarOff } from "lucide-react";
 import { uploadCatalogItemImage, deleteCatalogItemImage, setPrimaryImage } from "@/app/actions/catalog-items";
+import { adminImageSrc } from "@/lib/catalog-image";
 
 interface UploadedImage {
   id: number;
@@ -114,7 +115,7 @@ export function ImageUploader({ itemId, initialImages = [] }: ImageUploaderProps
           {images.map((img) => (
             <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg border border-[var(--surface-border)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt={img.altText ?? ""} className="h-full w-full object-cover" />
+              <img src={adminImageSrc(img.url)} alt={img.altText ?? ""} className="h-full w-full object-cover" />
               <div className="absolute inset-0 flex items-start justify-between gap-1 bg-black/0 p-1 opacity-0 transition-all group-hover:bg-black/30 group-hover:opacity-100">
                 <button
                   type="button"

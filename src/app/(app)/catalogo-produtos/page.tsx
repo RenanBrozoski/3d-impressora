@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { CatalogItemActions } from "./catalog-item-actions";
 import { Plus, ImageOff } from "lucide-react";
+import { adminImageSrc } from "@/lib/catalog-image";
 
 export default async function CatalogoProdutosPage({
   searchParams,
@@ -97,7 +98,7 @@ export default async function CatalogoProdutosPage({
                 {coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={coverUrl}
+                    src={adminImageSrc(coverUrl)}
                     alt={item.nome}
                     className="h-14 w-14 shrink-0 rounded-lg border border-[var(--surface-border)] object-cover"
                   />

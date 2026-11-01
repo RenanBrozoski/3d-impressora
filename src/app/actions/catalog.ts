@@ -273,7 +273,7 @@ export async function uploadCatalogImage(
   if (file.size > 10 * 1024 * 1024) return { erro: "Arquivo maior que 10MB." };
 
   const blob = await put(`catalog-images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`, file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: true,
   });
 

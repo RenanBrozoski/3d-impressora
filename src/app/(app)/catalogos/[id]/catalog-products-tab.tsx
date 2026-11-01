@@ -3,8 +3,11 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { Image as ImageIcon, Plus, Search, X, Loader2 } from "lucide-react";
+import { addItemToCatalog, removeItemFromCatalog } from "@/app/actions/catalog-items";
+import { useRouter } from "next/navigation";
+import { adminImageSrc } from "@/lib/catalog-image";
 
-// Thumbnail that tries proxy URL for private blobs; falls back to initial letter
+// Falls back to the initial letter when the image fails to load
 function AdminThumb({ url, nome }: { url?: string | null; nome: string }) {
   const [failed, setFailed] = useState(false);
   const initial = nome.charAt(0).toUpperCase();
@@ -17,22 +20,16 @@ function AdminThumb({ url, nome }: { url?: string | null; nome: string }) {
     );
   }
 
-  const proxyUrl = url.includes("private.blob.vercel-storage.com")
-    ? `/api/uploads/${encodeURIComponent(url)}`
-    : url;
-
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={proxyUrl}
+      src={adminImageSrc(url)}
       alt=""
       className="h-12 w-12 shrink-0 rounded-lg border border-[var(--surface-border)] object-cover"
       onError={() => setFailed(true)}
     />
   );
 }
-import { addItemToCatalog, removeItemFromCatalog } from "@/app/actions/catalog-items";
-import { useRouter } from "next/navigation";
 
 interface Item {
   id: number;
@@ -154,7 +151,7 @@ export function CatalogProductsTab({ catalogId, items, allItems }: CatalogProduc
                         {thumb ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={thumb}
+                            src={adminImageSrc(thumb)}
                             alt=""
                             className="h-9 w-9 shrink-0 rounded-md border border-[var(--surface-border)] object-cover"
                           />

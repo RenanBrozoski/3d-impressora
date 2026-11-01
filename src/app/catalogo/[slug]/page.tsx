@@ -5,6 +5,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { Search, SlidersHorizontal, FileDown } from "lucide-react";
 import { ProductGrid, type ProductItem, type CatalogAttributeForDisplay } from "./product-grid";
+import { catalogImageSrc } from "@/lib/catalog-image";
 
 type SearchParamsShape = {
   q?: string;
@@ -57,7 +58,7 @@ export default async function CatalogoSlugPage({
   const corSecundaria = theme?.corSecundaria ?? "#2563eb";
   const corTexto = theme?.corTexto ?? "#ffffff";
   const corFundo = theme?.corFundo ?? "#f5f4fb";
-  const imagemCapa = theme?.imagemCapa;
+  const imagemCapa = catalogImageSrc(theme?.imagemCapa);
   const cardStyle = theme?.cardStyle ?? "rounded";
 
   // Catalog attributes for display
@@ -70,7 +71,10 @@ export default async function CatalogoSlugPage({
   // Flatten items
   let items: ProductItem[] = catalog.products
     .filter((rel) => rel.item.ativo && !rel.item.deletedAt)
-    .map((rel) => rel.item as unknown as ProductItem);
+    .map((rel) => ({
+      ...rel.item,
+      images: rel.item.images.map((img) => ({ ...img, url: catalogImageSrc(img.url) })),
+    }) as unknown as ProductItem);
 
   // Build attribute filter params: attr_<id>=value
   const attrFilters: { id: number; valor: string }[] = [];

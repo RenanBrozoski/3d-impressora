@@ -1,6 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { db } from "@/lib/db";
 import { CatalogDocument, type PdfCatalogSection, type PdfProduct } from "@/lib/pdf/catalog-document";
+import { embedCatalogImages } from "@/lib/pdf/catalog-images";
 
 // Helper: build PdfProduct from a raw Prisma item with its includes
 function buildPdfProduct(item: {
@@ -186,6 +187,8 @@ export async function GET(request: Request) {
     if (sections.length === 0 || sections.every((s) => s.products.length === 0)) {
       return new Response("Nenhum produto para gerar o PDF", { status: 404 });
     }
+
+    sections = await embedCatalogImages(sections);
 
     const pdfBuffer = await renderToBuffer(
       <CatalogDocument

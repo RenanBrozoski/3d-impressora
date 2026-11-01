@@ -3,6 +3,7 @@
 import { SortableList } from "@/components/catalog/sortable-list";
 import { CatalogRowActions } from "./catalog-row-actions";
 import { reorderCatalogs } from "@/app/actions/catalog";
+import { adminImageSrc } from "@/lib/catalog-image";
 
 type CatalogRow = {
   id: number;
@@ -25,7 +26,7 @@ export function CatalogSortableList({ catalogs }: { catalogs: CatalogRow[] }) {
             className="h-10 w-10 shrink-0 rounded-lg border border-[var(--surface-border)]"
             style={{
               background: catalog.theme?.imagemCapa
-                ? `url(${catalog.theme.imagemCapa}) center/cover`
+                ? `url(${adminImageSrc(catalog.theme.imagemCapa)}) center/cover`
                 : catalog.theme?.corPrimaria ?? "#7c3aed",
             }}
           >

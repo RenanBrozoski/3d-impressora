@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/catalog-items";
 import { SortableList } from "@/components/catalog/sortable-list";
 import { reorderItemImages } from "@/app/actions/catalog-items";
+import { adminImageSrc } from "@/lib/catalog-image";
 
 interface ItemImage {
   id: number;
@@ -93,7 +94,7 @@ export function ProductImagesTab({ itemId, images }: ProductImagesTabProps) {
               {/* Thumbnail */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={img.url}
+                src={adminImageSrc(img.url)}
                 alt={img.altText ?? img.nomeOriginal ?? ""}
                 className="h-14 w-14 shrink-0 rounded-lg border border-[var(--surface-border)] object-cover"
               />

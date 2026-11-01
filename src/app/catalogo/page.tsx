@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { Package } from "lucide-react";
+import { catalogImageSrc } from "@/lib/catalog-image";
 
 export default async function CatalogoPage() {
   const catalogs = await db.catalog.findMany({
@@ -30,7 +31,7 @@ export default async function CatalogoPage() {
           const cor1 = catalog.theme?.corPrimaria ?? "#7c3aed";
           const cor2 = catalog.theme?.corSecundaria ?? "#2563eb";
           const corTexto = catalog.theme?.corTexto ?? "#ffffff";
-          const imagemCapa = catalog.theme?.imagemCapa;
+          const imagemCapa = catalogImageSrc(catalog.theme?.imagemCapa);
 
           return (
             <Link

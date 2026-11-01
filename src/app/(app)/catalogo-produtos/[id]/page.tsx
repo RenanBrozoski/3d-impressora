@@ -9,6 +9,7 @@ import { CatalogItemForm } from "../catalog-item-form";
 import { ProductTabsNav } from "./product-tabs-nav";
 import { ProductImagesTab } from "./product-images-tab";
 import { ProductCatalogsTab } from "./product-catalogs-tab";
+import { adminImageSrc } from "@/lib/catalog-image";
 
 type Tab = "dados" | "imagens" | "catalogos";
 
@@ -116,7 +117,7 @@ export default async function CatalogoProdutoDetailPage({
           {coverImage && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={coverImage.url}
+              src={adminImageSrc(coverImage.url)}
               alt={coverImage.altText ?? item.nome}
               className="h-20 w-20 shrink-0 rounded-xl border border-[var(--surface-border)] object-cover"
             />

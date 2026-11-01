@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { X, Search, CheckCircle2 } from "lucide-react";
 import { createCatalogItem, updateCatalogItem } from "@/app/actions/catalog-items";
 import { Button } from "@/components/ui/button";
+import { adminImageSrc } from "@/lib/catalog-image";
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input";
 
 type CatalogOption = { id: number; nome: string };
@@ -63,12 +64,10 @@ function ErpThumb({ fotoPath, nome }: { fotoPath: string | null; nome: string })
     );
   }
 
-  const proxyUrl = `/api/uploads/${encodeURIComponent(fotoPath)}`;
-
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={proxyUrl}
+      src={adminImageSrc(fotoPath)}
       alt=""
       className="h-10 w-10 shrink-0 rounded-lg object-cover"
       onError={() => setFailed(true)}
@@ -254,7 +253,7 @@ export function CatalogItemForm({ item, catalogs, attributes, erpProducts }: Cat
               {erpFotoPath && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={erpFotoPath}
+                  src={adminImageSrc(erpFotoPath)}
                   alt=""
                   className="h-10 w-10 shrink-0 rounded-lg object-cover"
                   onError={(e) => {

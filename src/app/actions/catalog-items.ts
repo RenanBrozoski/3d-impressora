@@ -7,6 +7,19 @@ import { put, del } from "@vercel/blob";
 
 export type CatalogItemActionState = { erro?: string; sucesso?: boolean } | undefined;
 
+// ERP photos are shared: the same blob can back a Product.fotoPath and several
+// catalog images, so only delete the blob once nothing else points to it.
+async function deleteBlobIfUnused(url: string, ignoreImageIds: number[]) {
+  const [product, otherImage] = await Promise.all([
+    db.product.findFirst({ where: { fotoPath: url }, select: { id: true } }),
+    db.catalogItemImage.findFirst({
+      where: { url, id: { notIn: ignoreImageIds } },
+      select: { id: true },
+    }),
+  ]);
+  if (!product && !otherImage) await Promise.allSettled([del(url)]);
+}
+
 // ---------- Criar produto ----------
 
 export async function createCatalogItem(
@@ -49,6 +62,14 @@ export async function createCatalogItem(
     if (existing) return { erro: "Já existe um produto com este SKU." };
   }
 
+  const sameName = await db.catalogItem.findFirst({
+    where: { nome: { equals: itemData.nome.trim(), mode: "insensitive" }, deletedAt: null },
+    select: { id: true },
+  });
+  if (sameName) {
+    return { erro: "Já existe um produto de catálogo com este nome. Adicione o existente ao catálogo em vez de criar outro." };
+  }
+
   // Upsert tags
   const tagRecords = await Promise.all(
     tags.map((nome) =>
@@ -72,37 +93,10 @@ export async function createCatalogItem(
     },
   });
 
-  // Se veio foto do ERP, criar imagem principal automaticamente
   if (erpFotoPath) {
-    let publicUrl = erpFotoPath;
-
-    // Blobs privados do Vercel não são acessíveis publicamente — fazer re-upload como público
-    if (erpFotoPath.includes("private.blob.vercel-storage.com")) {
-      try {
-        const res = await fetch(erpFotoPath, {
-          headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
-        });
-        if (res.ok) {
-          const ct = res.headers.get("content-type") ?? "image/jpeg";
-          const ext = ct.includes("png") ? ".png" : ct.includes("webp") ? ".webp" : ".jpg";
-          const blob = await put(
-            `catalog-items/${item.id}/erp-photo${ext}`,
-            res.body!,
-            { access: "public", contentType: ct }
-          );
-          publicUrl = blob.url;
-        }
-      } catch {
-        // falhou — não criar imagem com URL inacessível
-        publicUrl = "";
-      }
-    }
-
-    if (publicUrl) {
-      await db.catalogItemImage.create({
-        data: { itemId: item.id, url: publicUrl, isPrimary: true, ordem: 0 },
-      });
-    }
+    await db.catalogItemImage.create({
+      data: { itemId: item.id, url: erpFotoPath, isPrimary: true, ordem: 0 },
+    });
   }
 
   revalidatePath("/catalogo-produtos");
@@ -208,8 +202,9 @@ export async function deleteCatalogItem(id: number): Promise<CatalogItemActionSt
 
 export async function hardDeleteCatalogItem(id: number): Promise<CatalogItemActionState> {
   // Excluir imagens do blob antes de apagar o registro
-  const images = await db.catalogItemImage.findMany({ where: { itemId: id }, select: { url: true } });
-  await Promise.allSettled(images.map((img) => del(img.url)));
+  const images = await db.catalogItemImage.findMany({ where: { itemId: id }, select: { id: true, url: true } });
+  const ids = images.map((img) => img.id);
+  for (const img of images) await deleteBlobIfUnused(img.url, ids);
   await db.catalogItem.delete({ where: { id } });
   revalidatePath("/catalogo-produtos");
   revalidatePath("/catalogo");
@@ -315,7 +310,7 @@ export async function uploadCatalogItemImage(
   const blob = await put(
     `catalog-items/${itemId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`,
     file,
-    { access: "public", addRandomSuffix: true }
+    { access: "private", addRandomSuffix: true }
   );
 
   const img = await db.catalogItemImage.create({
@@ -340,7 +335,7 @@ export async function deleteCatalogItemImage(imageId: number): Promise<CatalogIt
   const img = await db.catalogItemImage.findUnique({ where: { id: imageId } });
   if (!img) return { erro: "Imagem não encontrada." };
 
-  await Promise.allSettled([del(img.url)]);
+  await deleteBlobIfUnused(img.url, [img.id]);
   await db.catalogItemImage.delete({ where: { id: imageId } });
 
   // Se era primária, promover a próxima

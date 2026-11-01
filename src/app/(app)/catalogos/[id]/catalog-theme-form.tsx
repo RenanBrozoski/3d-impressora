@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { saveCatalogTheme, uploadCatalogImage } from "@/app/actions/catalog";
 import { ColorPicker } from "@/components/catalog/color-picker";
 import { FieldError } from "@/components/ui/input";
+import { adminImageSrc } from "@/lib/catalog-image";
 
 type Theme = {
   corPrimaria: string;
@@ -64,7 +65,7 @@ function ImageField({ name, label, defaultValue }: { name: string; label: string
       </div>
       {url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt="" className="mt-1 h-16 w-auto rounded-lg border border-[var(--surface-border)] object-cover" />
+        <img src={adminImageSrc(url)} alt="" className="mt-1 h-16 w-auto rounded-lg border border-[var(--surface-border)] object-cover" />
       )}
     </div>
   );
